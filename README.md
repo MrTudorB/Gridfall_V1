@@ -1,8 +1,6 @@
-# Gridfall
+# GRIDFALL
 
-The decentralized battle-royale on Arbitrum.
-
-Scan - Eliminate - Survive
+![nano-banana-2025-10-18T19-12-27 (1)](https://github.com/user-attachments/assets/ec27d186-cc53-4e99-91b1-27471e43545e)
 
 ## The Challenge
 
@@ -12,31 +10,19 @@ Gridfall solves this. It's a gamified capital pool that is only possible with co
 
 ## How Gridfall Works
 
-Gridfall is a high-stakes survival game where 10 players enter a "vault" and only the survivors split the prize pool.
+‣ Join the Vault: 10 players connect their wallets and call joinGame(), depositing 0.001 ETH each into the GridfallVault smart contract. This creates the 0.01 ETH prize pool.
 
-Join the Purge: 10 players deposit 0.001 ETH each into the GridfallVault smart contract, creating a 0.01 ETH prize pool.
+‣ Trigger the Game Master: Once the vault is full, the contract calls the iExec iApp (the "Game Master") to confidentially start the game.
 
-The Confidential Assignment: The contract calls the iExec iApp (the "Game Master"). The iApp runs inside a Trusted Execution Environment (TEE). It confidentially assigns roles: 2 players become Sentinels (Hunters) and 8 players become Echoes (Hunted).
+‣ Confidential Assignment: The iApp runs inside a Trusted Execution Environment (TEE). It secretly assigns roles (2 Sentinels, 8 Echoes) and encrypts this role-map using iExec Data Protector. This secret is now stored, and no human, not even the admin, can see it.
 
-The Secret is Stored: The iApp itself encrypts this secret role-map and stores it using iExec Data Protector. The protectedDataAddress is saved to the contract. No one, not even the admin, has seen the roles.
+‣ The Hunt (Scan & Eliminate): The game is now ACTIVE. Any player can call the ping() function on another player. The contract forwards this request to the iApp.
 
-The Hunt (Scan & Eliminate): The game is now ACTIVE.
+‣ Execute the Logic: The iApp confidentially decrypts the secret role-map, executes the game's logic (Sentinel vs. Echo, friendly fire), and calls back to the contract to mark the correct player as "eliminated."
 
-Sentinels can "ping" (scan) other players on the grid.
+‣ The Payout (Survive): After the game ends, the iApp confidentially compares the secret role-map against the list of eliminated players to determine the survivors.
 
-They call the ping() function on the contract, which triggers the iApp.
-
-The iApp confidentially decrypts the role-map from Data Protector, executes the logic, and calls back with the result.
-
-Sentinel pings Echo = Echo is eliminated.
-
-Sentinel pings Sentinel = The pinging Sentinel is eliminated (friendly fire).
-
-Echo pings = The Echo is eliminated (for making noise).
-
-The Payout (Survive): After a set time, the iApp confidentially checks the role-map against the list of eliminated players. All surviving players (both Echoes and Sentinels) are added to the winners list and can claim their share of the 0.01 ETH prize pool.
-
-All role information is encrypted via iExec Data Protector and never revealed on-chain.
+‣ Claim Your Winnings: All surviving players—whose roles were never publicly revealed—can now call claimPrize() to receive their share of the prize pool.
 
 ## Tech Stack
 
