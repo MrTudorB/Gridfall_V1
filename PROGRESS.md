@@ -209,7 +209,7 @@
   - Action summary (pings, eliminations, friendly fire)
   - Comprehensive game summary with all metrics
 
-**Git Commit:** (pending)
+**Git Commit:** `e5fc65c` - "feat(iapp): add scan executor and winner calculator"
 
 ---
 
