@@ -264,7 +264,7 @@
 - test-docker.sh - Automated testing script
 - Updated README with all testing procedures
 
-**Git Commit:** (pending)
+**Git Commit:** `05e5512` - "feat(iapp): add Docker testing and integration tests"
 
 ---
 
