@@ -10,7 +10,7 @@ describe("GridfallGame", function () {
   let owner: HardhatEthersSigner;
   let players: HardhatEthersSigner[];
 
-  const DEPOSIT_AMOUNT = ethers.parseEther("0.1");
+  const DEPOSIT_AMOUNT = ethers.parseEther("0.001");
 
   beforeEach(async function () {
     // Get signers
@@ -92,7 +92,7 @@ describe("GridfallGame", function () {
       await gridfallGame.connect(players[0]).joinGame({ value: DEPOSIT_AMOUNT });
       await gridfallGame.connect(players[1]).joinGame({ value: DEPOSIT_AMOUNT });
 
-      expect(await gridfallGame.prizePool()).to.equal(ethers.parseEther("0.2"));
+      expect(await gridfallGame.prizePool()).to.equal(ethers.parseEther("0.002"));
     });
 
     it("Should track players remaining correctly", async function () {

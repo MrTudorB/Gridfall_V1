@@ -8,7 +8,7 @@ export const TOTAL_PLAYERS = 10;
 export const NUM_SENTINELS = 2;
 export const NUM_ECHOES = 8;
 
-export const DEPOSIT_AMOUNT_ETH = '0.1'; // ETH
+export const DEPOSIT_AMOUNT_ETH = '0.001'; // ETH (testnet-friendly)
 export const PROTOCOL_FEE_PERCENT = 5; // 5%
 export const SAFE_EXIT_REFUND_PERCENT = 50; // 50%
 

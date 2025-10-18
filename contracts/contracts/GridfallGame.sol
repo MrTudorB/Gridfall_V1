@@ -13,7 +13,7 @@ contract GridfallGame is Ownable, ReentrancyGuard {
     // ============ Game Configuration ============
 
     uint256 public constant TOTAL_PLAYERS = 10;
-    uint256 public constant DEPOSIT_AMOUNT = 0.1 ether;
+    uint256 public constant DEPOSIT_AMOUNT = 0.001 ether; // Testnet-friendly: 0.001 ETH per player
     uint256 public constant PROTOCOL_FEE_PERCENT = 5; // 5%
     uint256 public constant SAFE_EXIT_REFUND_PERCENT = 50; // 50%
 

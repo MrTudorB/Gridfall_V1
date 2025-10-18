@@ -11,7 +11,7 @@ describe("GridfallGame - Complete Game Flow", function () {
   let players: HardhatEthersSigner[];
   let mockIexecApp: HardhatEthersSigner;
 
-  const DEPOSIT_AMOUNT = ethers.parseEther("0.1");
+  const DEPOSIT_AMOUNT = ethers.parseEther("0.001");
 
   beforeEach(async function () {
     [owner, mockIexecApp, ...players] = await ethers.getSigners();
@@ -171,7 +171,7 @@ describe("GridfallGame - Complete Game Flow", function () {
 
       const balanceAfter = await ethers.provider.getBalance(players[0].address);
 
-      const expectedRefund = ethers.parseEther("0.05"); // 50% of 0.1
+      const expectedRefund = ethers.parseEther("0.0005"); // 50% of 0.001
       const actualGain = balanceAfter + gasUsed - balanceBefore;
 
       expect(actualGain).to.equal(expectedRefund);
@@ -182,7 +182,7 @@ describe("GridfallGame - Complete Game Flow", function () {
     it("Should emit events on safe exit", async function () {
       await expect(game.connect(players[0]).safeExit())
         .to.emit(game, "PlayerSafeExit")
-        .withArgs(players[0].address, ethers.parseEther("0.05"))
+        .withArgs(players[0].address, ethers.parseEther("0.0005"))
         .and.to.emit(game, "PlayerEliminated")
         .withArgs(players[0].address);
     });
@@ -192,7 +192,7 @@ describe("GridfallGame - Complete Game Flow", function () {
       await game.connect(players[0]).safeExit();
       const poolAfter = await game.prizePool();
 
-      expect(poolBefore - poolAfter).to.equal(ethers.parseEther("0.05"));
+      expect(poolBefore - poolAfter).to.equal(ethers.parseEther("0.0005"));
     });
 
     it("Should reject safe exit when not active", async function () {
@@ -250,13 +250,13 @@ describe("GridfallGame - Complete Game Flow", function () {
 
       const ownerBalanceAfter = await ethers.provider.getBalance(owner.address);
 
-      // Prize pool = 1 ETH (10 * 0.1)
-      // Protocol fee = 0.05 ETH (5%)
-      // Winners pool = 0.95 ETH
-      // Per winner = 0.19 ETH
+      // Prize pool = 0.01 ETH (10 * 0.001)
+      // Protocol fee = 0.0005 ETH (5%)
+      // Winners pool = 0.0095 ETH
+      // Per winner = 0.0019 ETH
 
-      const expectedFee = ethers.parseEther("0.05");
-      const expectedPrizePerWinner = ethers.parseEther("0.19");
+      const expectedFee = ethers.parseEther("0.0005");
+      const expectedPrizePerWinner = ethers.parseEther("0.0019");
 
       expect(ownerBalanceAfter - ownerBalanceBefore).to.equal(expectedFee);
       expect(await game.claimableAmount(players[5].address)).to.equal(expectedPrizePerWinner);
@@ -278,8 +278,8 @@ describe("GridfallGame - Complete Game Flow", function () {
 
       await game.connect(mockIexecApp)._endGameCallback(winners);
 
-      // 1 ETH pool - 0.05 ETH fee = 0.95 ETH for 1 winner
-      expect(await game.claimableAmount(players[0].address)).to.equal(ethers.parseEther("0.95"));
+      // 0.01 ETH pool - 0.0005 ETH fee = 0.0095 ETH for 1 winner
+      expect(await game.claimableAmount(players[0].address)).to.equal(ethers.parseEther("0.0095"));
     });
 
     it("Should handle game with no winners (all inactive)", async function () {
@@ -402,10 +402,10 @@ describe("GridfallGame - Complete Game Flow", function () {
       expect(await game.gameStatus()).to.equal(2); // FINISHED
 
       // Verify protocol fee collected
-      const expectedFee = ethers.parseEther("0.0475"); // 5% of (1 - 0.05 safe exit refund)
+      const expectedFee = ethers.parseEther("0.000475"); // 5% of (0.01 - 0.0005 safe exit refund)
       expect(ownerBalanceAfter - ownerBalanceBefore).to.be.closeTo(
         expectedFee,
-        ethers.parseEther("0.001")
+        ethers.parseEther("0.00001")
       );
 
       // 6. Winners claim prizes
