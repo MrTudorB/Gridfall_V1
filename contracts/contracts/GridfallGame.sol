@@ -90,6 +90,153 @@ contract GridfallGame is Ownable, ReentrancyGuard {
         emit PlayerJoined(msg.sender, players.length);
     }
 
+    /**
+     * @notice Start the game (admin only)
+     * @dev Triggers iExec iApp to generate roles
+     */
+    function startGame() external onlyOwner {
+        require(gameStatus == GameStatus.PENDING, "Game already started");
+        require(players.length == TOTAL_PLAYERS, "Need 10 players");
+
+        gameStatus = GameStatus.ACTIVE;
+
+        // In production, this will trigger iExec iApp
+        // For now, we'll use a mock callback in tests
+        emit GameStarted(block.timestamp);
+    }
+
+    /**
+     * @notice Ping another player
+     * @param target Address to ping
+     * @dev NO event emission to keep scanner identity private
+     */
+    function ping(address target) external {
+        require(gameStatus == GameStatus.ACTIVE, "Game not active");
+        require(!isEliminated[msg.sender], "You are eliminated");
+        require(hasJoined[target], "Target not in game");
+        require(target != msg.sender, "Cannot ping yourself");
+        require(!isEliminated[target], "Target already eliminated");
+
+        // In production, this triggers iExec scan
+        // The iApp will call _pingCallback with elimination result
+        // For testing, we'll call _pingCallback manually
+    }
+
+    /**
+     * @notice Exit game early and receive 50% refund
+     * @dev Counts as activity in TEE
+     */
+    function safeExit() external nonReentrant {
+        require(gameStatus == GameStatus.ACTIVE, "Game not active");
+        require(!isEliminated[msg.sender], "Already eliminated");
+        require(hasJoined[msg.sender], "Not in game");
+
+        // Mark as eliminated
+        isEliminated[msg.sender] = true;
+        eliminatedCount++;
+
+        // Calculate refund (50% of deposit)
+        uint256 refund = (DEPOSIT_AMOUNT * SAFE_EXIT_REFUND_PERCENT) / 100;
+        prizePool -= refund;
+
+        // Transfer refund
+        (bool success, ) = msg.sender.call{value: refund}("");
+        require(success, "Refund failed");
+
+        emit PlayerSafeExit(msg.sender, refund);
+        emit PlayerEliminated(msg.sender);
+    }
+
+    /**
+     * @notice End the game and calculate winners (admin only)
+     * @dev Triggers iExec to determine winners
+     */
+    function endGame() external onlyOwner {
+        require(gameStatus == GameStatus.ACTIVE, "Game not active");
+
+        // In production, this triggers iExec winner calculation
+        // For testing, we'll call _endGameCallback manually with mock winners
+    }
+
+    /**
+     * @notice Claim prize if you're a winner
+     */
+    function claimPrize() external nonReentrant {
+        require(gameStatus == GameStatus.FINISHED, "Game not finished");
+        require(claimableAmount[msg.sender] > 0, "No prize to claim");
+        require(!hasClaimed[msg.sender], "Already claimed");
+
+        uint256 amount = claimableAmount[msg.sender];
+        hasClaimed[msg.sender] = true;
+
+        (bool success, ) = msg.sender.call{value: amount}("");
+        require(success, "Transfer failed");
+
+        emit PrizeClaimed(msg.sender, amount);
+    }
+
+    // ============ iExec Callback Functions (Mock for now) ============
+
+    /**
+     * @notice Set iExec app address (admin only)
+     * @dev In production, this is called during deployment
+     */
+    function setIexecAppAddress(address _iexecAppAddress) external onlyOwner {
+        iexecAppAddress = _iexecAppAddress;
+    }
+
+    /**
+     * @notice iExec callback - role generation complete
+     * @param _protectedDataAddress Data Protector address for encrypted roles
+     */
+    function _roleGenerationCallback(bytes32 _protectedDataAddress) external onlyIexecApp {
+        protectedDataAddress = _protectedDataAddress;
+    }
+
+    /**
+     * @notice iExec callback - ping result
+     * @param eliminated Address of eliminated player (or address(0) if none)
+     */
+    function _pingCallback(address eliminated) external onlyIexecApp {
+        if (eliminated != address(0)) {
+            require(!isEliminated[eliminated], "Already eliminated");
+            isEliminated[eliminated] = true;
+            eliminatedCount++;
+            emit PlayerEliminated(eliminated);
+        }
+    }
+
+    /**
+     * @notice iExec callback - game end with winner list
+     * @param _winners Array of winner addresses
+     */
+    function _endGameCallback(address[] memory _winners) external onlyIexecApp nonReentrant {
+        require(gameStatus == GameStatus.ACTIVE, "Game not active");
+
+        gameStatus = GameStatus.FINISHED;
+        winners = _winners;
+
+        // Calculate protocol fee (5%)
+        uint256 protocolFee = (prizePool * PROTOCOL_FEE_PERCENT) / 100;
+        uint256 winnersPool = prizePool - protocolFee;
+
+        // Transfer protocol fee to owner
+        (bool feeSuccess, ) = owner().call{value: protocolFee}("");
+        require(feeSuccess, "Fee transfer failed");
+        emit ProtocolFeeCollected(protocolFee);
+
+        // Calculate prize per winner
+        if (_winners.length > 0) {
+            uint256 prizePerWinner = winnersPool / _winners.length;
+
+            for (uint256 i = 0; i < _winners.length; i++) {
+                claimableAmount[_winners[i]] = prizePerWinner;
+            }
+        }
+
+        emit GameEnded(block.timestamp, _winners.length);
+    }
+
     // ============ View Functions ============
 
     /**
