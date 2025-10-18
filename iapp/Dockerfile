@@ -20,5 +20,7 @@ RUN mkdir -p /iexec_in /iexec_out
 ENV IEXEC_IN=/iexec_in
 ENV IEXEC_OUT=/iexec_out
 
-# Run the application
-ENTRYPOINT ["node", "src/app.js"]
+# Default to role generator, but allow override
+# Can be overridden with: docker run <image> node src/scan-executor.js
+ENTRYPOINT ["node"]
+CMD ["src/app.js"]

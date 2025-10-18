@@ -4,11 +4,12 @@
   "description": "iExec TEE application for generating confidential player roles in Gridfall",
   "main": "src/app.js",
   "scripts": {
-    "test": "node test/test-local.js && node test/test-scan-executor.js && node test/test-winner-calculator.js",
+    "test": "node test/test-local.js && node test/test-scan-executor.js && node test/test-winner-calculator.js && node test/test-integration.js",
     "test:roles": "node test/test-local.js",
     "test:scan": "node test/test-scan-executor.js",
     "test:winners": "node test/test-winner-calculator.js",
-    "build": "docker build -t gridfall-role-generator ."
+    "test:integration": "node test/test-integration.js",
+    "build": "docker build -t gridfall-iapp ."
   },
   "keywords": ["iexec", "tee", "confidential-computing", "gridfall"],
   "author": "",

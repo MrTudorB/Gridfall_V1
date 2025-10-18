@@ -1,0 +1,97 @@
+{
+  "gameId": "integration-test-game",
+  "winners": [
+    "0x1111111111111111111111111111111111111111",
+    "0x5555555555555555555555555555555555555555",
+    "0x6666666666666666666666666666666666666666"
+  ],
+  "winnerCount": 3,
+  "stats": {
+    "totalPlayers": 10,
+    "eliminatedCount": 5,
+    "survivorCount": 5,
+    "ineligibleSurvivors": 2,
+    "sentinelWinners": 1,
+    "echoWinners": 2
+  },
+  "actionSummary": {
+    "totalActions": 7,
+    "pings": 6,
+    "safeExits": 1,
+    "eliminations": 3,
+    "friendlyFires": 1
+  },
+  "playerStats": {
+    "0x1111111111111111111111111111111111111111": {
+      "role": "SENTINEL",
+      "eliminated": false,
+      "moves": 2,
+      "pingsRemaining": 0,
+      "isWinner": true
+    },
+    "0x2222222222222222222222222222222222222222": {
+      "role": "SENTINEL",
+      "eliminated": true,
+      "moves": 2,
+      "pingsRemaining": 0,
+      "isWinner": false
+    },
+    "0x3333333333333333333333333333333333333333": {
+      "role": "ECHO",
+      "eliminated": true,
+      "moves": 0,
+      "pingsRemaining": "N/A",
+      "isWinner": false
+    },
+    "0x4444444444444444444444444444444444444444": {
+      "role": "ECHO",
+      "eliminated": true,
+      "moves": 0,
+      "pingsRemaining": "N/A",
+      "isWinner": false
+    },
+    "0x5555555555555555555555555555555555555555": {
+      "role": "ECHO",
+      "eliminated": false,
+      "moves": 1,
+      "pingsRemaining": "N/A",
+      "isWinner": true
+    },
+    "0x6666666666666666666666666666666666666666": {
+      "role": "ECHO",
+      "eliminated": false,
+      "moves": 1,
+      "pingsRemaining": "N/A",
+      "isWinner": true
+    },
+    "0x7777777777777777777777777777777777777777": {
+      "role": "ECHO",
+      "eliminated": true,
+      "moves": 0,
+      "pingsRemaining": "N/A",
+      "isWinner": false
+    },
+    "0x8888888888888888888888888888888888888888": {
+      "role": "ECHO",
+      "eliminated": true,
+      "moves": 1,
+      "pingsRemaining": "N/A",
+      "isWinner": false
+    },
+    "0x9999999999999999999999999999999999999999": {
+      "role": "ECHO",
+      "eliminated": false,
+      "moves": 0,
+      "pingsRemaining": "N/A",
+      "isWinner": false
+    },
+    "0xAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA": {
+      "role": "ECHO",
+      "eliminated": false,
+      "moves": 0,
+      "pingsRemaining": "N/A",
+      "isWinner": false
+    }
+  },
+  "timestamp": 1760800376918
+}

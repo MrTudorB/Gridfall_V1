@@ -1,42 +1,86 @@
-# Gridfall Role Generator iApp
+# Gridfall iApps
 
-This is an iExec TEE (Trusted Execution Environment) application that generates confidential player roles for the Gridfall game.
+This directory contains three iExec TEE (Trusted Execution Environment) applications for the Gridfall game.
 
 ## Overview
 
-The role generator randomly assigns roles to 10 players:
-- **2 Sentinels** (Hunters) - Try to eliminate Echoes
-- **8 Echoes** (Hunted) - Try to survive
+The Gridfall game uses three confidential iApps:
 
-All role assignments are kept confidential using iExec's TEE technology, ensuring that player roles remain secret throughout the game.
+1. **Role Generator** (`src/app.js`) - Randomly assigns roles to 10 players:
+   - 2 Sentinels (Hunters) - Try to eliminate Echoes
+   - 8 Echoes (Hunted) - Try to survive
+
+2. **Scan Executor** (`src/scan-executor.js`) - Processes ping/scan actions:
+   - Sentinel → Echo = Echo eliminated
+   - Sentinel → Sentinel = Friendly fire, scanner eliminated
+   - Echo → Anyone = No effect
+   - Enforces ping limits (2 per Sentinel)
+   - Tracks move counts and action history
+
+3. **Winner Calculator** (`src/winner-calculator.js`) - Determines game winners:
+   - Identifies survivors (non-eliminated players)
+   - Enforces minimum move requirement
+   - Generates detailed game statistics
+
+All operations are kept confidential using iExec's TEE technology.
 
 ## Project Structure
 
 ```
 iapp/
 ├── src/
-│   └── app.js          # Main application logic
+│   ├── app.js                   # Role generator
+│   ├── scan-executor.js         # Ping/scan processor
+│   └── winner-calculator.js     # Winner calculator
 ├── test/
-│   └── test-local.js   # Local testing script
-├── Dockerfile          # Docker configuration for iExec
-├── package.json        # Node.js dependencies
-└── README.md          # This file
+│   ├── test-local.js           # Role generator tests
+│   ├── test-scan-executor.js   # Scan executor tests (10 tests)
+│   ├── test-winner-calculator.js # Winner calculator tests (10 tests)
+│   ├── test-integration.js     # Integration test (full game flow)
+│   └── test-docker.sh          # Docker testing script
+├── Dockerfile                   # Docker configuration for iExec
+├── DOCKER_TESTING.md           # Docker testing guide
+├── package.json                 # Node.js dependencies
+└── README.md                   # This file
 ```
 
 ## Local Testing
 
-Test the role generation logic locally:
+Run all tests:
 
 ```bash
 npm install
 npm test
 ```
 
-This will:
-1. Create test directories simulating the iExec environment
-2. Generate mock player addresses
-3. Run the role generation algorithm
-4. Output results to `test/test_data/iexec_out/result.json`
+This runs:
+1. Role generator test (with mock data)
+2. Scan executor test suite (10 tests)
+3. Winner calculator test suite (10 tests)
+
+Run individual test suites:
+
+```bash
+npm run test:roles        # Role generator only
+npm run test:scan         # Scan executor tests
+npm run test:winners      # Winner calculator tests
+npm run test:integration  # Full game flow integration test
+```
+
+### Integration Test
+
+The integration test simulates a complete game:
+
+```bash
+node test/test-integration.js
+```
+
+This test:
+1. Generates roles for 10 players
+2. Processes 7 different game actions (pings, safe exits, friendly fire)
+3. Calculates winners
+4. Validates all game mechanics
+5. Saves detailed results to `test/test_integration/results/`
 
 ## Building
 
