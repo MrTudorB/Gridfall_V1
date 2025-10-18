@@ -9,13 +9,18 @@ import { useState, useEffect } from 'react';
 export default function Home() {
   const { address, isConnected } = useAccount();
   const [isJoining, setIsJoining] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
 
-  // Write contract hook for joining game
-  const { data: joinHash, writeContract, isPending: isWritePending } = useWriteContract();
+  // Write contract hooks
+  const { data: joinHash, writeContract: joinGameWrite, isPending: isJoinPending } = useWriteContract();
+  const { data: startHash, writeContract: startGameWrite, isPending: isStartPending } = useWriteContract();
 
-  // Wait for transaction confirmation
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+  // Wait for transaction confirmations
+  const { isLoading: isJoinConfirming, isSuccess: isJoinConfirmed } = useWaitForTransactionReceipt({
     hash: joinHash,
+  });
+  const { isLoading: isStartConfirming, isSuccess: isStartConfirmed } = useWaitForTransactionReceipt({
+    hash: startHash,
   });
 
   // Read game data
@@ -23,6 +28,12 @@ export default function Home() {
     address: GRIDFALL_CONTRACT_ADDRESS,
     abi: GRIDFALL_ABI,
     functionName: 'gameStatus',
+  });
+
+  const { data: owner } = useReadContract({
+    address: GRIDFALL_CONTRACT_ADDRESS,
+    abi: GRIDFALL_ABI,
+    functionName: 'owner',
   });
 
   const { data: players, refetch: refetchPlayers } = useReadContract({
@@ -56,7 +67,7 @@ export default function Home() {
 
     setIsJoining(true);
     try {
-      writeContract({
+      joinGameWrite({
         address: GRIDFALL_CONTRACT_ADDRESS,
         abi: GRIDFALL_ABI,
         functionName: 'joinGame',
@@ -68,19 +79,61 @@ export default function Home() {
     }
   };
 
+  // Handle start game
+  const handleStartGame = async () => {
+    if (isStarting) return;
+
+    setIsStarting(true);
+    try {
+      startGameWrite({
+        address: GRIDFALL_CONTRACT_ADDRESS,
+        abi: GRIDFALL_ABI,
+        functionName: 'startGame',
+      });
+    } catch (error) {
+      console.error('Error starting game:', error);
+      setIsStarting(false);
+    }
+  };
+
   // Reset joining state and refetch data when transaction is confirmed
   useEffect(() => {
-    if (isConfirmed) {
+    if (isJoinConfirmed) {
       setIsJoining(false);
       refetchGameStatus();
       refetchPlayers();
       refetchPrizePool();
       refetchHasJoined();
     }
-  }, [isConfirmed, refetchGameStatus, refetchPlayers, refetchPrizePool, refetchHasJoined]);
+  }, [isJoinConfirmed, refetchGameStatus, refetchPlayers, refetchPrizePool, refetchHasJoined]);
 
-  const isLoading = isWritePending || isConfirming;
-  const canJoinGame = isConnected && !hasJoined && gameStatus === 0 && !isLoading;
+  // Reset starting state and refetch data when game start is confirmed
+  useEffect(() => {
+    if (isStartConfirmed) {
+      setIsStarting(false);
+      refetchGameStatus();
+    }
+  }, [isStartConfirmed, refetchGameStatus]);
+
+  // Auto-refresh game data every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetchGameStatus();
+      refetchPlayers();
+      refetchPrizePool();
+      if (address) {
+        refetchHasJoined();
+      }
+    }, 5000); // 5 seconds
+
+    return () => clearInterval(interval);
+  }, [address, refetchGameStatus, refetchPlayers, refetchPrizePool, refetchHasJoined]);
+
+  const isJoinLoading = isJoinPending || isJoinConfirming;
+  const isStartLoading = isStartPending || isStartConfirming;
+  const canJoinGame = isConnected && !hasJoined && gameStatus === 0 && !isJoinLoading;
+  const isOwner = address && owner && address.toLowerCase() === (owner as string).toLowerCase();
+  const canStartGame = isOwner && gameStatus === 0 && players && (players as string[]).length === 10;
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
@@ -201,16 +254,16 @@ export default function Home() {
             ) : (
               <button
                 onClick={handleJoinGame}
-                disabled={!canJoinGame || isLoading}
+                disabled={!canJoinGame || isJoinLoading}
                 className="px-16 py-5 border-2 border-cyan-500 text-cyan-400 font-bold text-lg rounded-lg hover:bg-cyan-500 hover:text-black transition-all transform hover:scale-105 uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-transparent disabled:hover:text-cyan-400"
               >
-                {isLoading ? (
+                {isJoinLoading ? (
                   <span className="flex items-center gap-3">
                     <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    {isWritePending ? 'Confirm in Wallet...' : 'Joining Game...'}
+                    {isJoinPending ? 'Confirm in Wallet...' : 'Joining Game...'}
                   </span>
                 ) : (
                   `Enter the Grid (${depositAmount ? formatEther(depositAmount as bigint) : '0.001'} ETH)`
@@ -220,7 +273,7 @@ export default function Home() {
           </div>
 
           {/* Transaction Status */}
-          {isConfirmed && (
+          {isJoinConfirmed && (
             <div className="mt-8 max-w-2xl mx-auto">
               <div className="bg-green-500/10 border border-green-500/50 rounded-xl p-4 text-center">
                 <p className="text-green-400 font-semibold">✓ Successfully joined the game!</p>
@@ -233,6 +286,107 @@ export default function Home() {
                   >
                     View transaction
                   </a>
+                )}
+              </div>
+            </div>
+          )}
+
+          {isStartConfirmed && (
+            <div className="mt-8 max-w-2xl mx-auto">
+              <div className="bg-purple-500/10 border border-purple-500/50 rounded-xl p-4 text-center">
+                <p className="text-purple-400 font-semibold">✓ Game started successfully!</p>
+                {startHash && (
+                  <a
+                    href={`https://sepolia.arbiscan.io/tx/${startHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-cyan-400 hover:text-cyan-300 underline mt-2 inline-block"
+                  >
+                    View transaction
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Lobby Section (only when game is PENDING and connected) */}
+          {isConnected && gameStatus === 0 && players && (players as string[]).length > 0 && (
+            <div className="mt-20">
+              <div className="bg-cyan-950/20 border border-cyan-500/30 rounded-2xl p-8">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-2xl font-bold text-cyan-400">Lobby</h3>
+                  <span className="text-lg text-gray-400">
+                    {(players as string[]).length}/10 Players
+                  </span>
+                </div>
+
+                {/* Player Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                  {Array.from({ length: 10 }).map((_, index) => {
+                    const player = (players as string[])[index];
+                    const isYou = player && address && player.toLowerCase() === address.toLowerCase();
+
+                    return (
+                      <div
+                        key={index}
+                        className={`p-4 rounded-lg border-2 transition-all ${
+                          player
+                            ? isYou
+                              ? 'bg-cyan-500/10 border-cyan-500/50'
+                              : 'bg-gray-800/50 border-gray-700'
+                            : 'bg-gray-900/30 border-gray-800 border-dashed'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-3 h-3 rounded-full ${
+                                player ? 'bg-green-500' : 'bg-gray-600'
+                              }`}
+                            />
+                            <span className="font-mono text-sm">
+                              {player ? (
+                                <>
+                                  {player.substring(0, 6)}...{player.substring(38)}
+                                  {isYou && <span className="ml-2 text-cyan-400 font-bold">(You)</span>}
+                                </>
+                              ) : (
+                                <span className="text-gray-500">Waiting...</span>
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Start Game Button (Owner Only) */}
+                {isOwner && (
+                  <div className="pt-4 border-t border-cyan-500/20">
+                    <button
+                      onClick={handleStartGame}
+                      disabled={!canStartGame || isStartLoading}
+                      className="w-full px-8 py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold text-lg rounded-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 uppercase tracking-wider"
+                    >
+                      {isStartLoading ? (
+                        <span className="flex items-center justify-center gap-3">
+                          <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          {isStartPending ? 'Confirm in Wallet...' : 'Starting Game...'}
+                        </span>
+                      ) : (
+                        `Start Game ${(players as string[]).length < 10 ? `(${10 - (players as string[]).length} more needed)` : ''}`
+                      )}
+                    </button>
+                    {isOwner && (players as string[]).length < 10 && (
+                      <p className="text-center text-sm text-gray-400 mt-2">
+                        Owner Controls: Start the game when 10 players have joined
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

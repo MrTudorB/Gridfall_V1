@@ -1,7 +1,7 @@
 # Gridfall Development Progress
 
 **Last Updated:** 2025-10-19
-**Current Status:** Step 8 Complete - Frontend Basic Setup with Wallet Integration
+**Current Status:** Step 9 Complete - Frontend Lobby with Player List and Game Controls
 
 ---
 
@@ -16,7 +16,7 @@
 - [x] Step 6: Smart contract iExec integration ✅ COMPLETE
 - [x] Step 7: Deploy to Arbitrum Sepolia ✅ COMPLETE
 - [x] Step 8: Frontend basic setup ✅ COMPLETE
-- [ ] Step 9: Frontend landing and lobby pages
+- [x] Step 9: Frontend landing and lobby pages ✅ COMPLETE
 - [ ] Step 10: Frontend game grid page
 - [ ] Step 11: Frontend results page
 - [ ] Step 12: E2E testing and demo prep
@@ -489,6 +489,73 @@
 
 ---
 
+### Step 9: Frontend Landing and Lobby Pages ✅ COMPLETE
+**Started:** 2025-10-19
+**Completed:** 2025-10-19
+
+**Completed Tasks:**
+- ✅ Enhanced lobby section with player list display (10 slots grid)
+- ✅ Added contract owner detection and controls
+- ✅ Implemented Start Game button (owner only, 10 players required)
+- ✅ Added auto-refresh polling every 5 seconds
+- ✅ Fixed RainbowKit chunk loading errors
+- ✅ Added transaction handling for Start Game
+- ✅ Implemented real-time player list updates
+
+**Key Features Implemented:**
+- **Player List in Lobby:**
+  - Grid display of all 10 player slots
+  - Filled slots show truncated addresses (0x1234...5678)
+  - Current user's slot highlighted in cyan with "(You)" label
+  - Empty slots show "Waiting..." in gray
+  - Green/gray indicators for filled/empty status
+
+- **Start Game Controls (Owner Only):**
+  - Detects contract owner by comparing wallet addresses
+  - Start Game button only visible to owner
+  - Only enabled when all 10 players have joined
+  - Shows progress: "Start Game (X more needed)"
+  - Full transaction handling with loading states
+  - Success notification with Arbiscan link
+
+- **Auto-Refresh System:**
+  - Polls contract data every 5 seconds
+  - Refreshes: game status, players, prize pool, hasJoined
+  - Keeps lobby and stats synchronized
+  - No manual refresh needed
+
+- **Transaction Improvements:**
+  - Separate hooks for join and start transactions
+  - Independent loading states for each action
+  - Transaction success notifications for both
+  - Auto-refetch data after confirmations
+
+**Technical Changes:**
+- Added `owner` contract read hook
+- Implemented `handleStartGame` function
+- Added `isOwner` and `canStartGame` computed values
+- Created auto-refresh useEffect with 5s interval
+- Separate transaction state management
+
+**Bug Fixes:**
+- Fixed RainbowKit chunk loading error by adding `react-remove-scroll-bar@2.3.4` as explicit dependency
+- Resolved missing package files causing Connect Wallet button to fail
+- Fixed compatibility issues between RainbowKit and React RC version
+
+**Files Modified:**
+- frontend/app/page.tsx - Added lobby, player list, start game, auto-refresh
+- frontend/package.json - Added react-remove-scroll-bar dependency
+
+**Testing:**
+- ✅ Connect Wallet button works correctly
+- ✅ Player list displays and updates in real-time
+- ✅ Owner controls appear for contract owner wallet
+- ✅ Start Game button enabled when 10 players joined
+- ✅ Auto-refresh updates data every 5 seconds
+- ✅ No chunk loading errors
+
+---
+
 ## Known Issues
 
 None.
@@ -497,11 +564,11 @@ None.
 
 ## Next Steps
 
-1. Begin Step 9: Frontend landing and lobby pages
-2. Enhance lobby with player list display
-3. Add game start functionality for owner
-4. Implement real-time updates for game state
-5. Prepare for game grid page development
+1. Begin Step 10: Frontend game grid page
+2. Implement game grid visualization
+3. Add ping/scan functionality for active game
+4. Add safe exit feature (50% refund during game)
+5. Display player elimination status
 
 ---
 
