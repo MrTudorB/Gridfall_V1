@@ -1,7 +1,7 @@
 # Gridfall Development Progress
 
 **Last Updated:** 2025-01-18
-**Current Status:** Step 1 Complete - Moving to Step 2
+**Current Status:** Step 2 Complete - Moving to Step 3
 
 ---
 
@@ -9,7 +9,8 @@
 
 - [x] Step 0: Project initialization ✅ COMPLETE
 - [x] Step 1: Smart contract basic structure ✅ COMPLETE
-- [ ] Step 2: Smart contract game flow (NEXT)
+- [x] Step 2: Smart contract game flow ✅ COMPLETE
+- [ ] Step 3: iApp role generation (NEXT)
 - [ ] Step 3: iApp role generation
 - [ ] Step 4: iApp scan executor and winner calculator
 - [ ] Step 5: iApp Docker testing
@@ -80,6 +81,40 @@
 - ✅ Deployment gas: ~701,928
 
 **Git Commit:** `c1b3356` - "feat(contracts): implement basic GridfallGame contract"
+
+---
+
+### Step 2: Smart Contract Game Flow ✅ COMPLETE
+**Started:** 2025-01-18
+**Completed:** 2025-01-18
+
+**Completed Tasks:**
+- ✅ Implemented `startGame()` function (admin only)
+- ✅ Implemented `ping()` function with privacy (no events)
+- ✅ Implemented `safeExit()` with 50% refund
+- ✅ Implemented `endGame()` and `claimPrize()` functions
+- ✅ Added mock iExec callback functions (_roleGenerationCallback, _pingCallback, _endGameCallback)
+- ✅ Implemented protocol fee distribution (5% to owner)
+- ✅ Wrote comprehensive test suite (45 tests)
+- ✅ Full game simulation test passing
+
+**Test Results:**
+- ✅ 45/45 tests passing
+- ✅ All game mechanics tested (join, start, ping, safe exit, end, claim)
+- ✅ Protocol fee distribution verified
+- ✅ Safe exit refund logic tested
+- ✅ Edge cases covered (double claim, eliminated players, etc.)
+- ✅ Full game flow simulation successful
+
+**Key Features Implemented:**
+- Start game requires 10 players
+- Ping function keeps scanner identity private (no events)
+- Safe exit provides 50% refund and marks player eliminated
+- Protocol takes 5% fee on game end
+- Winners split remaining 95% equally
+- Claim prize with reentrancy protection
+
+**Git Commit:** `cf05aa7` - "feat(contracts): implement complete game flow with mock iExec"
 
 ---
 
