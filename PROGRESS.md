@@ -1,7 +1,7 @@
 # Gridfall Development Progress
 
 **Last Updated:** 2025-01-18
-**Current Status:** Step 6 Complete - Ready for Deployment
+**Current Status:** Step 7 Complete - Contract Deployed to Arbitrum Sepolia
 
 ---
 
@@ -14,7 +14,7 @@
 - [x] Step 4: iApp scan executor and winner calculator ✅ COMPLETE
 - [x] Step 5: iApp Docker testing ✅ COMPLETE
 - [x] Step 6: Smart contract iExec integration ✅ COMPLETE
-- [ ] Step 7: Deploy to Arbitrum Sepolia
+- [x] Step 7: Deploy to Arbitrum Sepolia ✅ COMPLETE
 - [ ] Step 8: Frontend basic setup
 - [ ] Step 9: Frontend landing and lobby pages
 - [ ] Step 10: Frontend game grid page
@@ -26,8 +26,10 @@
 
 ## Environment Details
 
-**Contract Address (Arbitrum Sepolia):** Not yet deployed
-**iApp Address:** Not yet deployed
+**Contract Address (Arbitrum Sepolia):** `0x0cce65424abCCC4A7486B06C5b0A004b0cb3A3e5`
+**Deployer Address:** `0x8F00788eBe39c43B26a029A9efCe6C2166f810E0`
+**Block Explorer:** https://sepolia.arbiscan.io/address/0x0cce65424abCCC4A7486B06C5b0A004b0cb3A3e5
+**iApp Address:** Not yet deployed (using mock callbacks for demo)
 **Frontend URL:** Not yet deployed
 
 ---
@@ -353,6 +355,61 @@
 
 ---
 
+### Step 7: Deploy to Arbitrum Sepolia ✅ COMPLETE
+**Started:** 2025-01-18
+**Completed:** 2025-01-18
+
+**Completed Tasks:**
+- ✅ Reduced deposit amount from 0.1 ETH to 0.001 ETH (testnet-friendly)
+- ✅ Updated all test files to reflect new deposit calculations
+- ✅ Fixed TypeScript configuration for Hardhat scripts
+- ✅ Created .env and .env.example files for deployment
+- ✅ Created GET_TESTNET_ETH.md with faucet instructions
+- ✅ Created check-balance.ts script for wallet verification
+- ✅ Obtained testnet ETH from faucets (0.0002 ETH)
+- ✅ Successfully deployed GridfallGame to Arbitrum Sepolia
+- ✅ Created DEPLOYMENT.md with contract details
+- ✅ Created VERIFY_CONTRACT.md with verification instructions
+
+**Test Results:**
+- ✅ All 45 tests passing after deposit amount change
+- ✅ Contract deployed successfully to Arbitrum Sepolia
+- ✅ Gas costs verified and optimized
+
+**Deployment Details:**
+- **Contract Address:** `0x0cce65424abCCC4A7486B06C5b0A004b0cb3A3e5`
+- **Network:** Arbitrum Sepolia (Chain ID: 421614)
+- **Deployer:** `0x8F00788eBe39c43B26a029A9efCe6C2166f810E0`
+- **Deposit Amount:** 0.001 ETH per player (100x reduction from original)
+- **Total Prize Pool:** 0.01 ETH per game
+- **Explorer:** https://sepolia.arbiscan.io/address/0x0cce65424abCCC4A7486B06C5b0A004b0cb3A3e5
+
+**Key Changes:**
+- **Deposit Reduction Rationale:**
+  - Original: 0.1 ETH per player (1 ETH total)
+  - New: 0.001 ETH per player (0.01 ETH total)
+  - Reason: Much easier to obtain testnet ETH for extensive testing and demos
+  - All prize calculations and tests updated accordingly
+
+**Files Created:**
+- contracts/.env.example - Environment variable template
+- contracts/DEPLOYMENT.md - Complete deployment information
+- contracts/VERIFY_CONTRACT.md - Contract verification guide
+- contracts/GET_TESTNET_ETH.md - Faucet instructions
+- contracts/scripts/check-balance.ts - Balance checking utility
+- contracts/scripts/verify.ts - Contract verification script
+
+**Next Steps for Production:**
+- Optional: Verify contract on Arbiscan (requires API key)
+- Configure frontend with contract address
+- Test contract interaction from frontend
+- Set iExec app address when moving to production
+
+**Git Commits:**
+- `eb7ea96` - "feat: reduce deposit amount to 0.001 ETH for testnet deployment"
+
+---
+
 ## Known Issues
 
 None yet.
@@ -361,10 +418,10 @@ None yet.
 
 ## Next Steps
 
-1. Begin Step 7: Deploy to Arbitrum Sepolia
-2. Deploy GridfallGame contract to testnet
-3. Verify contract on block explorer
-4. Test contract with frontend
+1. Begin Step 8: Frontend basic setup
+2. Configure frontend with deployed contract address
+3. Implement wallet connection and contract interaction
+4. Test game flow on testnet
 5. Prepare for demo/presentation
 
 ---
