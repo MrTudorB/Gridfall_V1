@@ -33,7 +33,7 @@ Gridfall solves this. It's a gamified capital pool that is only possible with co
 - **Smart Contracts:** Hardhat, Solidity, OpenZeppelin
 - **Frontend:** Next.js 14, Tailwind CSS v4, RainbowKit + wagmi
 - **Deployment:** Vercel
-- **Gridfall Vault:** [0xYourContractAddress...]
+- **Gridfall Vault:** [0x0cce65424abCCC4A7486B06C5b0A004b0cb3A3e5]
 
 ## Project Structure
 
