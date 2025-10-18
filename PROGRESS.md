@@ -147,7 +147,7 @@
 - Local testing environment simulating iExec directories
 - Error handling and logging
 
-**Git Commit:** (pending)
+**Git Commit:** `2af653d` - "feat(iapp): implement role generation TEE application"
 
 ---
 
