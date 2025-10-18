@@ -24,6 +24,8 @@ Gridfall solves this. It's a gamified capital pool that is only possible with co
 
 ‣ Claim Your Winnings: All surviving players—whose roles were never publicly revealed—can now call claimPrize() to receive their share of the prize pool.
 
+![nano-banana-2025-10-18T19-39-12_1](https://github.com/user-attachments/assets/529496f6-d48b-4b1a-a308-12763d3510bf)
+
 ## Tech Stack
 
 - **Blockchain:** Arbitrum Sepolia
