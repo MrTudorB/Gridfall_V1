@@ -1,7 +1,7 @@
 # Gridfall Development Progress
 
 **Last Updated:** 2025-01-18
-**Current Status:** Step 3 Complete - Moving to Step 4
+**Current Status:** Step 4 Complete - Moving to Step 5
 
 ---
 
@@ -11,7 +11,7 @@
 - [x] Step 1: Smart contract basic structure ✅ COMPLETE
 - [x] Step 2: Smart contract game flow ✅ COMPLETE
 - [x] Step 3: iApp role generation ✅ COMPLETE
-- [ ] Step 4: iApp scan executor and winner calculator
+- [x] Step 4: iApp scan executor and winner calculator ✅ COMPLETE
 - [ ] Step 5: iApp Docker testing
 - [ ] Step 6: Smart contract iExec integration
 - [ ] Step 7: Deploy to Arbitrum Sepolia
@@ -151,6 +151,68 @@
 
 ---
 
+### Step 4: iApp Scan Executor and Winner Calculator ✅ COMPLETE
+**Started:** 2025-01-18
+**Completed:** 2025-01-18
+
+**Completed Tasks:**
+- ✅ Designed scan executor logic and game state data structures
+- ✅ Implemented scan-executor.js for processing ping actions
+- ✅ Implemented game state tracking (roles, eliminations, move counts, ping limits)
+- ✅ Implemented winner-calculator.js for determining survivors
+- ✅ Implemented elimination logic (Sentinels scan Echoes)
+- ✅ Implemented friendly fire logic (Sentinel scans Sentinel)
+- ✅ Implemented safe exit functionality
+- ✅ Created comprehensive test suite for scan executor (10 tests)
+- ✅ Created comprehensive test suite for winner calculator (10 tests)
+- ✅ Updated npm scripts for testing
+
+**Test Results:**
+- ✅ Scan executor: 10/10 tests passing
+  - Sentinel eliminates Echo
+  - Friendly fire (Sentinel → Sentinel)
+  - Echo pings have no effect
+  - Sentinel ping limit (max 2)
+  - Cannot ping eliminated players
+  - Eliminated players cannot ping
+  - Safe exit mechanics
+  - Action history tracking
+  - Move count tracking
+  - Self-ping prevention
+- ✅ Winner calculator: 10/10 tests passing
+  - All Echoes survive scenario
+  - Sentinels win scenario
+  - Mixed winners scenario
+  - Minimum move requirement
+  - All eliminated scenario
+  - Statistics calculation
+  - Game summary generation
+  - Winner details
+  - Empty game state handling
+  - Action history preservation
+
+**Key Features Implemented:**
+- **Scan Executor:**
+  - Sentinel vs Echo elimination mechanics
+  - Friendly fire detection and consequences
+  - Ping limit enforcement (2 per Sentinel)
+  - Move count tracking for winner eligibility
+  - Complete action history recording
+  - Safe exit processing
+  - Input validation and error handling
+
+- **Winner Calculator:**
+  - Survivor identification (non-eliminated players)
+  - Minimum move requirement (≥1 move to win)
+  - Separate counting for Sentinel and Echo winners
+  - Detailed player statistics generation
+  - Action summary (pings, eliminations, friendly fire)
+  - Comprehensive game summary with all metrics
+
+**Git Commit:** (pending)
+
+---
+
 ## Known Issues
 
 None yet.
@@ -159,11 +221,11 @@ None yet.
 
 ## Next Steps
 
-1. Begin Step 4: iApp scan executor and winner calculator
-2. Implement ping/scan processing logic
-3. Implement winner calculation based on eliminations
-4. Add game state tracking across multiple scans
-5. Test scan and winner calculation logic
+1. Begin Step 5: iApp Docker testing
+2. Build Docker images for all three iApps
+3. Test each iApp in Docker container
+4. Verify iExec directory structure and outputs
+5. Create integration tests for complete game flow
 
 ---
 
