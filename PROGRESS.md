@@ -1,7 +1,7 @@
 # Gridfall Development Progress
 
 **Last Updated:** 2025-01-18
-**Current Status:** Step 2 Complete - Moving to Step 3
+**Current Status:** Step 3 Complete - Moving to Step 4
 
 ---
 
@@ -10,8 +10,7 @@
 - [x] Step 0: Project initialization ✅ COMPLETE
 - [x] Step 1: Smart contract basic structure ✅ COMPLETE
 - [x] Step 2: Smart contract game flow ✅ COMPLETE
-- [ ] Step 3: iApp role generation (NEXT)
-- [ ] Step 3: iApp role generation
+- [x] Step 3: iApp role generation ✅ COMPLETE
 - [ ] Step 4: iApp scan executor and winner calculator
 - [ ] Step 5: iApp Docker testing
 - [ ] Step 6: Smart contract iExec integration
@@ -118,6 +117,40 @@
 
 ---
 
+### Step 3: iApp Role Generation ✅ COMPLETE
+**Started:** 2025-01-18
+**Completed:** 2025-01-18
+
+**Completed Tasks:**
+- ✅ Researched iExec iApp structure and TEE requirements
+- ✅ Created iApp project structure with proper folders
+- ✅ Implemented role generation algorithm (2 Sentinels, 8 Echoes)
+- ✅ Used cryptographically secure randomness (crypto.randomBytes)
+- ✅ Created Dockerfile for TEE deployment
+- ✅ Implemented iExec input/output format
+- ✅ Created local testing script
+- ✅ Installed dependencies (iexec SDK)
+- ✅ Verified role generation with multiple test runs
+
+**Test Results:**
+- ✅ Role generation working correctly (2 Sentinels, 8 Echoes)
+- ✅ Randomness verified across multiple runs
+- ✅ Proper JSON output format
+- ✅ Unique game IDs generated for each session
+- ✅ All 10 players correctly assigned roles
+
+**Key Features Implemented:**
+- Cryptographically secure role shuffling using Fisher-Yates algorithm
+- iExec-compatible input/output structure
+- TEE-ready Dockerfile with Node.js 18
+- Comprehensive role data output (gameId, roleAssignments, sentinels, echoes)
+- Local testing environment simulating iExec directories
+- Error handling and logging
+
+**Git Commit:** (pending)
+
+---
+
 ## Known Issues
 
 None yet.
@@ -126,11 +159,11 @@ None yet.
 
 ## Next Steps
 
-1. Begin Step 2: Smart Contract Game Flow
-2. Implement: startGame(), ping(), safeExit(), endGame(), claimPrize()
-3. Add mock iExec callback functions
-4. Write comprehensive tests for all game mechanics
-5. Test protocol fee distribution (5%)
+1. Begin Step 4: iApp scan executor and winner calculator
+2. Implement ping/scan processing logic
+3. Implement winner calculation based on eliminations
+4. Add game state tracking across multiple scans
+5. Test scan and winner calculation logic
 
 ---
 

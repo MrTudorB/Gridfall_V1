@@ -1,0 +1,16 @@
+{
+  "name": "gridfall-role-generator",
+  "version": "1.0.0",
+  "description": "iExec TEE application for generating confidential player roles in Gridfall",
+  "main": "src/app.js",
+  "scripts": {
+    "test": "node src/app.js",
+    "build": "docker build -t gridfall-role-generator ."
+  },
+  "keywords": ["iexec", "tee", "confidential-computing", "gridfall"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "iexec": "^8.0.0"
+  }
+}

@@ -46,6 +46,10 @@ next-env.d.ts
 # iExec
 .secrets/
 iexec-app.json
+wallet.json
+
+# iApp test data
+iapp/test/test_data/
 
 # Misc
 *.tgz
