@@ -7,8 +7,8 @@
 
 ## Progress Overview
 
-- [x] Step 0: Project initialization (IN PROGRESS)
-- [ ] Step 1: Smart contract basic structure
+- [x] Step 0: Project initialization ✅ COMPLETE
+- [ ] Step 1: Smart contract basic structure (NEXT)
 - [ ] Step 2: Smart contract game flow
 - [ ] Step 3: iApp role generation
 - [ ] Step 4: iApp scan executor and winner calculator
@@ -40,8 +40,9 @@ Will be generated in Step 0.
 
 ## Completed Steps
 
-### Step 0: Project Initialization ⏳ IN PROGRESS
+### Step 0: Project Initialization ✅ COMPLETE
 **Started:** 2025-01-18
+**Completed:** 2025-01-18
 
 **Completed Tasks:**
 - ✅ Created monorepo folder structure
@@ -50,11 +51,11 @@ Will be generated in Step 0.
 - ✅ Created `README.md`
 - ✅ Created `DEVELOPMENT_PLAN.md`
 - ✅ Created `PROGRESS.md`
+- ✅ Generated 10 test wallets
+- ✅ Created shared types file (constants.ts, types.ts)
+- ✅ First git commit (edae70d)
 
-**Remaining Tasks:**
-- [ ] Generate 10 test wallets
-- [ ] Create shared types file
-- [ ] First git commit
+**Git Commit:** `edae70d` - "chore: initialize gridfall project structure"
 
 ---
 
