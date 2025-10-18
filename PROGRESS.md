@@ -349,7 +349,7 @@
 - Security best practices
 - Testing strategies
 
-**Git Commit:** (pending)
+**Git Commit:** `f48547c` - "docs(iexec): add comprehensive iExec integration documentation and tooling"
 
 ---
 
