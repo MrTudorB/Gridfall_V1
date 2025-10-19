@@ -597,19 +597,19 @@ export default function Home() {
                   <li><span className="text-red-400 font-bold">2 Sentinels</span> - Can eliminate Echoes by scanning them</li>
                   <li><span className="text-green-400 font-bold">8 Echoes</span> - Must avoid being scanned by Sentinels</li>
                 </ul>
-                <p className="mt-2 text-yellow-400 text-sm">⚠️ You won't know your role until you make your first scan!</p>
+                <p className="mt-2 text-yellow-400 text-sm">⚠️ You won&apos;t know your role until you make your first scan!</p>
               </div>
 
               {/* Gameplay */}
               <div>
                 <h3 className="text-xl font-bold text-cyan-400 mb-2">Gameplay</h3>
                 <ol className="list-decimal list-inside space-y-2 ml-2">
-                  <li>Once the game starts, you'll see a 2x5 grid of all 10 players</li>
-                  <li>Click on any player's card (except your own) to scan them</li>
+                  <li>Once the game starts, you&apos;ll see a 2x5 grid of all 10 players</li>
+                  <li>Click on any player&apos;s card (except your own) to scan them</li>
                   <li>Confirm your scan in the modal that appears</li>
                   <li>Your role will be revealed after your first scan</li>
-                  <li>If you're a Sentinel and scan an Echo, they are eliminated</li>
-                  <li>If you're an Echo or a Sentinel scanning another Sentinel, nothing happens</li>
+                  <li>If you&apos;re a Sentinel and scan an Echo, they are eliminated</li>
+                  <li>If you&apos;re an Echo or a Sentinel scanning another Sentinel, nothing happens</li>
                   <li>Continue scanning until the game ends</li>
                 </ol>
                 <p className="mt-2 text-yellow-400 text-sm">⚠️ You must make at least one move to be eligible for winning!</p>
@@ -630,10 +630,10 @@ export default function Home() {
               <div>
                 <h3 className="text-xl font-bold text-cyan-400 mb-2">Strategy Tips</h3>
                 <ul className="space-y-2 ml-2">
-                  <li>Don't reveal your role too early</li>
+                  <li>Don&apos;t reveal your role too early</li>
                   <li>Watch the elimination patterns to identify Sentinels</li>
-                  <li>If you're a Sentinel, consider your timing carefully</li>
-                  <li>If you're an Echo, try to blend in and avoid suspicious behavior</li>
+                  <li>If you&apos;re a Sentinel, consider your timing carefully</li>
+                  <li>If you&apos;re an Echo, try to blend in and avoid suspicious behavior</li>
                   <li>Remember: everyone must make at least one move!</li>
                 </ul>
               </div>
@@ -641,7 +641,7 @@ export default function Home() {
               {/* Safe Exit */}
               <div>
                 <h3 className="text-xl font-bold text-cyan-400 mb-2">Safe Exit</h3>
-                <p>If you want to leave the game early, you can use the "Safe Exit" button. This will remove you from the game but you won't be eligible for prizes.</p>
+                <p>If you want to leave the game early, you can use the &quot;Safe Exit&quot; button. This will remove you from the game but you won&apos;t be eligible for prizes.</p>
               </div>
             </div>
 
@@ -650,7 +650,7 @@ export default function Home() {
                 onClick={() => setShowHowToPlay(false)}
                 className="px-8 py-3 bg-cyan-500 hover:bg-cyan-400 text-black font-bold rounded-lg transition-all"
               >
-                Got it! Let's Play
+                Got it! Let&apos;s Play
               </button>
             </div>
           </div>
