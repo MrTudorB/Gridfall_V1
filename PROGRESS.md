@@ -1,7 +1,7 @@
 # Gridfall Development Progress
 
 **Last Updated:** 2025-10-19
-**Current Status:** Step 9 Complete - Frontend Lobby with Player List and Game Controls
+**Current Status:** Step 11 Complete - Frontend Results Page with Prize Claiming
 
 ---
 
@@ -17,8 +17,8 @@
 - [x] Step 7: Deploy to Arbitrum Sepolia ✅ COMPLETE
 - [x] Step 8: Frontend basic setup ✅ COMPLETE
 - [x] Step 9: Frontend landing and lobby pages ✅ COMPLETE
-- [ ] Step 10: Frontend game grid page
-- [ ] Step 11: Frontend results page
+- [x] Step 10: Frontend game grid page ✅ COMPLETE
+- [x] Step 11: Frontend results page ✅ COMPLETE
 - [ ] Step 12: E2E testing and demo prep
 - [ ] Step 13: Documentation and polish
 
@@ -556,6 +556,228 @@
 
 ---
 
+### Step 10: Frontend Game Grid Page ✅ COMPLETE
+**Started:** 2025-10-19
+**Completed:** 2025-10-19
+
+**Completed Tasks:**
+- ✅ Created GameGrid component with 2x5 player card layout
+- ✅ Implemented click-to-scan interaction for player cards
+- ✅ Created scan confirmation modal (Yes/No)
+- ✅ Implemented role reveal on first scan attempt
+- ✅ Added ping/scan transaction execution
+- ✅ Implemented Safe Exit functionality with 50% refund
+- ✅ Added elimination status display on player cards
+- ✅ Created game stats dashboard (remaining, eliminated, prize pool)
+- ✅ Integrated GameGrid into main page (shown when game is active)
+
+**Key Features Implemented:**
+- **2x5 Player Grid Layout:**
+  - 10 player cards in a 2-column grid
+  - Visual distinction for current player (cyan border, "YOU" label)
+  - Eliminated players shown with red tint and "ELIMINATED" label
+  - Green/red status indicators for alive/eliminated
+  - Click-to-scan interaction for non-eliminated players
+  - Hover effects on clickable cards
+
+- **Interactive Scan System:**
+  - Click any player card (except yours) to initiate scan
+  - Confirmation modal: "Are you sure you want to scan this player?"
+  - Two options: "Yes, I am sure" and "Not right now"
+  - First scan triggers role reveal modal
+  - Role reveal shows SENTINEL or ECHO (mock role for now)
+  - After role acknowledgment, ping transaction executes
+  - Subsequent scans skip role reveal and execute immediately
+
+- **Role Reveal Modal:**
+  - Displayed on first scan attempt only
+  - Shows player's role (SENTINEL or ECHO)
+  - Role-specific description text
+  - "Understood - Proceed with Scan" button
+  - Purple theme for role reveal
+
+- **Safe Exit Feature:**
+  - Yellow button at bottom of grid
+  - Shows refund amount (50% of deposit)
+  - Confirmation modal before exit
+  - Transaction handling with loading states
+  - Disabled for eliminated players
+
+- **Game Stats Dashboard:**
+  - Players Remaining (green)
+  - Eliminated Count (red)
+  - Prize Pool (cyan)
+  - Real-time updates from contract
+
+- **Player Status Display:**
+  - "You are still in the game!" banner for active players
+  - "You have been eliminated!" banner for eliminated players
+  - Instructions change based on whether role has been revealed
+  - Different messaging for first-time vs returning scanners
+
+- **Transaction Management:**
+  - Separate hooks for ping and safeExit transactions
+  - Loading states during transaction pending/confirmation
+  - Success notifications with Arbiscan links
+  - Auto-refetch data after successful transactions
+  - Error handling for failed transactions
+
+**Files Created:**
+- frontend/app/components/GameGrid.tsx - Complete game grid component
+
+**Files Modified:**
+- frontend/app/page.tsx - Added GameGrid import and conditional rendering
+
+**Technical Implementation:**
+- Uses Wagmi hooks for contract reads (eliminatedPlayers, playersRemaining, isEliminated)
+- Uses Wagmi write hooks for ping and safeExit transactions
+- State management for modals and transaction flows
+- Responsive 2-column grid layout with Tailwind CSS
+- Cyberpunk theme with cyan/purple/red color scheme
+- Fixed modals with backdrop blur
+- Toast notifications for transaction success
+
+**User Flow:**
+1. Game starts → GameGrid appears (only for joined players)
+2. Player sees 2x5 grid of all 10 players
+3. Player clicks another player's card
+4. Confirmation modal appears
+5. If first scan: Role reveal modal → Proceed → Execute ping
+6. If subsequent scan: Execute ping immediately
+7. Transaction confirms → Grid updates with elimination status
+8. Player can continue scanning or use Safe Exit
+9. Eliminated players see red banner and can't interact
+
+**Next Steps for Production:**
+- Integrate real role data from iExec TEE (replace mock role)
+- Add role assignment callback from smart contract
+- Display actual ping history/action log
+- Add animations for eliminations
+- Consider adding scan cooldown timer
+
+---
+
+### Step 11: Frontend Results Page ✅ COMPLETE
+**Started:** 2025-10-19
+**Completed:** 2025-10-19
+
+**Completed Tasks:**
+- ✅ Created Results component for finished games
+- ✅ Implemented winners list display with addresses
+- ✅ Added prize claim functionality with transaction handling
+- ✅ Displayed game statistics (winners, survivors, eliminated)
+- ✅ Implemented claim status indicators (claimed/unclaimed)
+- ✅ Showed individual prize amounts for winners
+- ✅ Added celebration UI for winners vs eliminated banner
+- ✅ Integrated Results component into main page (gameStatus === 2)
+- ✅ Implemented transaction management for prize claiming
+
+**Key Features Implemented:**
+- **Winner/Loser Banners:**
+  - Victory banner for winners (green gradient, celebration emojis)
+  - Consolation banner for eliminated players
+  - Dynamic messaging based on winner count
+  - Personalized congratulations
+
+- **Game Statistics Dashboard:**
+  - Winners count (green card with glow effect)
+  - Survivors count (cyan card)
+  - Eliminated count (red card)
+  - Prize pool display
+  - Hover effects on stat cards
+
+- **Prize Claim Section:**
+  - Only visible to winners
+  - Shows individual claimable amount
+  - Large "Claim Prize" button
+  - Transaction loading states
+  - "Prize Claimed!" indicator for already claimed
+  - Displays claimable amount in ETH
+
+- **Winners List:**
+  - Grid layout showing all winners
+  - Trophy emoji for each winner
+  - Truncated addresses (0x1234...5678)
+  - Current player highlighted in cyan
+  - Prize amount displayed for current player
+  - "YOU" indicator for current player
+
+- **Eliminated Players List:**
+  - Red-themed section
+  - Skull emoji for eliminated players
+  - Full list of eliminated addresses
+  - Current player highlighted if eliminated
+  - Separate section from winners
+
+- **Transaction Management:**
+  - claimPrize() write function
+  - Loading states during transaction
+  - Success notification with Arbiscan link
+  - Auto-refetch after claim confirmation
+  - Error handling
+
+- **Contract Integration:**
+  - getWinners() - fetch winner list
+  - isWinner(address) - check if current player won
+  - claimableAmount(address) - check prize amount
+  - hasClaimed(address) - check claim status
+  - getEliminatedPlayers() - fetch eliminated list
+  - claimPrize() - execute claim transaction
+
+**Files Created:**
+- frontend/app/components/Results.tsx - Complete results page component
+
+**Files Modified:**
+- frontend/app/page.tsx - Added Results import and conditional rendering for gameStatus === 2
+
+**Visual Design:**
+- **Winner Theme:**
+  - Green and cyan gradient colors
+  - Celebration emojis (🎉, 🏆)
+  - Glowing card effects
+  - Large, bold typography
+
+- **Layout:**
+  - "GAME OVER" header with gradient text
+  - 3-column stats grid (responsive)
+  - Centered prize pool display
+  - 2-column winner/eliminated lists
+  - Fixed toast notification for claim success
+
+- **User Experience:**
+  - Clear winner/loser distinction
+  - Easy-to-find claim button for winners
+  - Transaction progress indicators
+  - Success confirmations
+  - Direct Arbiscan links
+
+**User Flow:**
+1. Game ends (gameStatus = 2) → Results page appears
+2. Player sees winner/loser banner based on outcome
+3. Game statistics displayed (winners, survivors, eliminated)
+4. Winners see prize claim section with amount
+5. Click "Claim Prize" button
+6. Confirm transaction in wallet
+7. Transaction processes → Success notification
+8. "Prize Claimed!" indicator appears
+9. Can view full winner and eliminated lists
+
+**Edge Cases Handled:**
+- No claimable amount (shows "No prize to claim")
+- Already claimed (shows ✓ indicator)
+- Non-winners don't see claim section
+- Transaction failures handled gracefully
+- Empty winner/eliminated lists handled
+
+**Next Steps for Production:**
+- Add "Play Again" button to reset/join new game
+- Display detailed game history/action log
+- Add animations for claim success
+- Show individual player statistics (scans made, etc.)
+- Add social sharing for winners
+
+---
+
 ## Known Issues
 
 None.
@@ -564,11 +786,11 @@ None.
 
 ## Next Steps
 
-1. Begin Step 10: Frontend game grid page
-2. Implement game grid visualization
-3. Add ping/scan functionality for active game
-4. Add safe exit feature (50% refund during game)
-5. Display player elimination status
+1. Begin Step 12: E2E testing and demo prep
+2. Test complete game flow from join → play → results → claim
+3. Prepare demo walkthrough script
+4. Test with multiple wallets
+5. Verify all transactions on Arbitrum Sepolia
 
 ---
 

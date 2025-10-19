@@ -5,6 +5,8 @@ import { useAccount, useReadContract, useWriteContract, useWaitForTransactionRec
 import { formatEther } from 'viem';
 import { GRIDFALL_CONTRACT_ADDRESS, GRIDFALL_ABI } from '@/lib/contract';
 import { useState, useEffect } from 'react';
+import GameGrid from './components/GameGrid';
+import Results from './components/Results';
 
 export default function Home() {
   const { address, isConnected } = useAccount();
@@ -392,8 +394,26 @@ export default function Home() {
             </div>
           )}
 
-          {/* Game Info Section (only when connected) */}
-          {isConnected && (
+          {/* Active Game Grid (when game is ACTIVE and player has joined) */}
+          {isConnected && gameStatus === 1 && hasJoined && players && (
+            <GameGrid
+              players={players as string[]}
+              currentPlayer={address!}
+              prizePool={prizePool as bigint}
+            />
+          )}
+
+          {/* Results Page (when game is FINISHED and player has joined) */}
+          {isConnected && gameStatus === 2 && hasJoined && players && (
+            <Results
+              players={players as string[]}
+              currentPlayer={address!}
+              prizePool={prizePool as bigint}
+            />
+          )}
+
+          {/* Game Info Section (only when connected and NOT in active game or results) */}
+          {isConnected && ((gameStatus !== 1 && gameStatus !== 2) || !hasJoined) && (
             <div className="mt-20 space-y-6">
               <div className="bg-cyan-950/20 border border-cyan-500/30 rounded-2xl p-8">
                 <h3 className="text-2xl font-bold text-cyan-400 mb-6">Game Status</h3>
