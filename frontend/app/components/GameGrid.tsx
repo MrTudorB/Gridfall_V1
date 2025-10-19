@@ -9,46 +9,66 @@ interface GameGridProps {
   players: string[];
   currentPlayer: string;
   prizePool: bigint;
+  simulationMode?: boolean;
+  simulationEliminatedPlayers?: string[];
+  onSimulationElimination?: (playerAddress: string) => void;
+  onEndSimulation?: () => void;
+  onExitSimulation?: () => void;
 }
 
-export default function GameGrid({ players, currentPlayer, prizePool }: GameGridProps) {
+export default function GameGrid({
+  players,
+  currentPlayer,
+  prizePool,
+  simulationMode = false,
+  simulationEliminatedPlayers = [],
+  onSimulationElimination,
+  onEndSimulation,
+  onExitSimulation
+}: GameGridProps) {
   const [selectedTarget, setSelectedTarget] = useState<string | null>(null);
   const [showRoleReveal, setShowRoleReveal] = useState(false);
   const [hasSeenRole, setHasSeenRole] = useState(false);
   const [isPinging, setIsPinging] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [simulationRole, setSimulationRole] = useState<'SENTINEL' | 'ECHO' | null>(null);
 
-  // Read contract data
+  // Read contract data (skip if simulation mode)
   const { data: eliminatedPlayers, refetch: refetchEliminated } = useReadContract({
     address: GRIDFALL_CONTRACT_ADDRESS,
     abi: GRIDFALL_ABI,
     functionName: 'getEliminatedPlayers',
+    query: { enabled: !simulationMode }
   });
 
   const { data: playersRemaining, refetch: refetchRemaining } = useReadContract({
     address: GRIDFALL_CONTRACT_ADDRESS,
     abi: GRIDFALL_ABI,
     functionName: 'getPlayersRemaining',
+    query: { enabled: !simulationMode }
   });
 
   const { data: isCurrentPlayerEliminated, refetch: refetchIsEliminated } = useReadContract({
     address: GRIDFALL_CONTRACT_ADDRESS,
     abi: GRIDFALL_ABI,
     functionName: 'isEliminated',
-    args: [currentPlayer],
+    args: [currentPlayer as `0x${string}`],
+    query: { enabled: !simulationMode }
   });
 
   const { data: refundPercent } = useReadContract({
     address: GRIDFALL_CONTRACT_ADDRESS,
     abi: GRIDFALL_ABI,
     functionName: 'SAFE_EXIT_REFUND_PERCENT',
+    query: { enabled: !simulationMode }
   });
 
   const { data: depositAmount } = useReadContract({
     address: GRIDFALL_CONTRACT_ADDRESS,
     abi: GRIDFALL_ABI,
     functionName: 'DEPOSIT_AMOUNT',
+    query: { enabled: !simulationMode }
   });
 
   // Write contract hooks
@@ -67,7 +87,7 @@ export default function GameGrid({ players, currentPlayer, prizePool }: GameGrid
   const handlePlayerClick = (playerAddress: string) => {
     if (playerAddress === currentPlayer) return; // Can't scan yourself
     if (isPlayerEliminated(playerAddress)) return; // Can't scan eliminated players
-    if (isCurrentPlayerEliminated) return; // Can't scan if you're eliminated
+    if (currentPlayerEliminated) return; // Can't scan if you're eliminated
 
     setSelectedTarget(playerAddress);
   };
@@ -80,18 +100,84 @@ export default function GameGrid({ players, currentPlayer, prizePool }: GameGrid
     if (!hasSeenRole) {
       setShowRoleReveal(true);
       setHasSeenRole(true);
+
+      // Assign random role for simulation (80% Echo, 20% Sentinel)
+      if (simulationMode && !simulationRole) {
+        setSimulationRole(Math.random() > 0.8 ? 'SENTINEL' : 'ECHO');
+      }
+
       // Don't execute ping yet, wait for role reveal acknowledgment
       return;
     }
 
-    // Execute ping transaction
-    executePing();
+    // Execute ping transaction or simulation
+    if (simulationMode) {
+      executeSimulationPing();
+    } else {
+      executePing();
+    }
   };
 
   // Execute ping after role reveal
   const handleRoleRevealAcknowledged = () => {
     setShowRoleReveal(false);
-    executePing();
+    if (simulationMode) {
+      executeSimulationPing();
+    } else {
+      executePing();
+    }
+  };
+
+  // Execute simulation ping (mock elimination)
+  const executeSimulationPing = () => {
+    if (!selectedTarget) return;
+
+    // If you're a Sentinel, eliminate the target (simulated)
+    if (simulationRole === 'SENTINEL' && onSimulationElimination) {
+      setTimeout(() => {
+        onSimulationElimination(selectedTarget);
+        setSelectedTarget(null);
+        // Trigger other players to make moves after this one
+        simulateOtherPlayersMoves();
+      }, 500);
+    } else {
+      // Echo pings have no effect
+      setSelectedTarget(null);
+      // Still trigger other players to make moves
+      simulateOtherPlayersMoves();
+    }
+  };
+
+  // Simulate other players making moves (for demo)
+  const simulateOtherPlayersMoves = () => {
+    if (!simulationMode || !onSimulationElimination) return;
+
+    // Get all non-eliminated players except current player
+    const activePlayers = players.filter(
+      p => !isPlayerEliminated(p) && p !== currentPlayer
+    );
+
+    // Simulate 2-3 random players making moves
+    const numMovesToSimulate = Math.min(Math.floor(Math.random() * 2) + 2, activePlayers.length);
+
+    for (let i = 0; i < numMovesToSimulate; i++) {
+      setTimeout(() => {
+        // Pick a random active player as the "scanner"
+        const scanner = activePlayers[Math.floor(Math.random() * activePlayers.length)];
+
+        // Pick a random target (different from scanner)
+        const possibleTargets = activePlayers.filter(p => p !== scanner && !isPlayerEliminated(p));
+        if (possibleTargets.length === 0) return;
+
+        const target = possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
+
+        // 20% chance this scanner is a Sentinel and eliminates the target
+        if (Math.random() < 0.2) {
+          onSimulationElimination(target);
+        }
+        // Otherwise, it's an Echo or Sentinel that didn't eliminate (no effect)
+      }, 1000 + i * 800); // Stagger the moves
+    }
   };
 
   // Execute ping transaction
@@ -147,18 +233,36 @@ export default function GameGrid({ players, currentPlayer, prizePool }: GameGrid
 
   // Check if player is eliminated
   const isPlayerEliminated = (playerAddress: string) => {
+    if (simulationMode) {
+      return simulationEliminatedPlayers.some(
+        (addr) => addr.toLowerCase() === playerAddress.toLowerCase()
+      );
+    }
     if (!eliminatedPlayers) return false;
     return (eliminatedPlayers as string[]).some(
       (addr) => addr.toLowerCase() === playerAddress.toLowerCase()
     );
   };
 
+  // Get current players remaining and eliminated count
+  const actualPlayersRemaining = simulationMode
+    ? players.length - simulationEliminatedPlayers.length
+    : playersRemaining !== undefined ? Number(playersRemaining) : 10;
+
+  const eliminatedCount = simulationMode
+    ? simulationEliminatedPlayers.length
+    : eliminatedPlayers ? (eliminatedPlayers as string[]).length : 0;
+
+  // Check if current player is eliminated
+  const currentPlayerEliminated = simulationMode
+    ? isPlayerEliminated(currentPlayer)
+    : isCurrentPlayerEliminated;
+
   // Calculate refund amount
   const refundAmount = depositAmount && refundPercent
-    ? (depositAmount as bigint * BigInt(refundPercent as number)) / 100n
-    : 0n;
+    ? (depositAmount as bigint * BigInt(Number(refundPercent))) / BigInt(100)
+    : BigInt(0);
 
-  const eliminatedCount = eliminatedPlayers ? (eliminatedPlayers as string[]).length : 0;
   const isPingLoading = isPingPending || isPingConfirming;
   const isExitLoading = isExitPending || isExitConfirming;
 
@@ -166,12 +270,24 @@ export default function GameGrid({ players, currentPlayer, prizePool }: GameGrid
     <div className="mt-20">
       {/* Game Stats Header */}
       <div className="bg-cyan-950/20 border border-cyan-500/30 rounded-2xl p-6 mb-8">
-        <h2 className="text-3xl font-bold text-cyan-400 text-center mb-6">ACTIVE GAME</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-3xl font-bold text-cyan-400">
+            {simulationMode ? '🎮 DEMO MODE' : 'ACTIVE GAME'}
+          </h2>
+          {simulationMode && onExitSimulation && (
+            <button
+              onClick={onExitSimulation}
+              className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg transition-all text-sm"
+            >
+              Exit Simulation
+            </button>
+          )}
+        </div>
         <div className="grid grid-cols-3 gap-6 text-center">
           <div>
             <div className="text-sm text-gray-400 mb-2">Players Remaining</div>
             <div className="text-3xl font-bold text-green-400">
-              {playersRemaining !== undefined ? playersRemaining.toString() : '10'}
+              {actualPlayersRemaining}
             </div>
           </div>
           <div>
@@ -188,7 +304,7 @@ export default function GameGrid({ players, currentPlayer, prizePool }: GameGrid
       </div>
 
       {/* Your Status */}
-      {isCurrentPlayerEliminated ? (
+      {currentPlayerEliminated ? (
         <div className="bg-red-950/20 border border-red-500/50 rounded-xl p-6 mb-8 text-center">
           <div className="text-2xl font-bold text-red-400 mb-2">You have been eliminated!</div>
           <div className="text-gray-400">Better luck next time, survivor.</div>
@@ -262,16 +378,26 @@ export default function GameGrid({ players, currentPlayer, prizePool }: GameGrid
         </div>
       </div>
 
-      {/* Safe Exit Button */}
-      {!isCurrentPlayerEliminated && (
-        <div className="flex justify-center mb-8">
-          <button
-            onClick={() => setShowExitConfirm(true)}
-            disabled={isExitLoading}
-            className="px-8 py-4 bg-yellow-600 hover:bg-yellow-500 text-black font-bold rounded-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider"
-          >
-            {isExitLoading ? 'Exiting...' : `Safe Exit (Refund ${formatEther(refundAmount)} ETH)`}
-          </button>
+      {/* Safe Exit / End Game Buttons */}
+      {!currentPlayerEliminated && (
+        <div className="flex justify-center gap-4 mb-8">
+          {!simulationMode && (
+            <button
+              onClick={() => setShowExitConfirm(true)}
+              disabled={isExitLoading}
+              className="px-8 py-4 bg-yellow-600 hover:bg-yellow-500 text-black font-bold rounded-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider"
+            >
+              {isExitLoading ? 'Exiting...' : `Safe Exit (Refund ${formatEther(refundAmount)} ETH)`}
+            </button>
+          )}
+          {simulationMode && onEndSimulation && (
+            <button
+              onClick={onEndSimulation}
+              className="px-8 py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg transition-all transform hover:scale-105 uppercase tracking-wider"
+            >
+              End Game & View Results
+            </button>
+          )}
         </div>
       )}
 
@@ -316,11 +442,10 @@ export default function GameGrid({ players, currentPlayer, prizePool }: GameGrid
             <h3 className="text-3xl font-bold text-purple-400 mb-4 text-center">ROLE REVEALED</h3>
             <div className="bg-purple-950/50 border border-purple-500/50 rounded-xl p-6 mb-6 text-center">
               <div className="text-5xl font-black text-purple-400 mb-2">
-                {/* Mock role - in production this would come from TEE */}
-                {Math.random() > 0.8 ? 'SENTINEL' : 'ECHO'}
+                {simulationMode ? simulationRole : (Math.random() > 0.8 ? 'SENTINEL' : 'ECHO')}
               </div>
               <div className="text-gray-400 text-sm">
-                {Math.random() > 0.8
+                {(simulationMode ? simulationRole : (Math.random() > 0.8 ? 'SENTINEL' : 'ECHO')) === 'SENTINEL'
                   ? 'You can eliminate Echoes by scanning them'
                   : 'Survive and avoid being scanned by Sentinels'}
               </div>

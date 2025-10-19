@@ -778,6 +778,57 @@
 
 ---
 
+### Simulation Mode Feature ✅ COMPLETE
+**Started:** 2025-10-19
+**Completed:** 2025-10-19
+
+**Purpose:** Allow judges and visitors to experience the game without wallet connection or transactions.
+
+**Completed Tasks:**
+- ✅ Added simulation mode state management
+- ✅ Created "Simulate Gameplay" button (always visible, purple-themed)
+- ✅ Implemented mock player data (10 simulated wallets)
+- ✅ Added simulation props to GameGrid and Results components
+- ✅ Implemented auto-simulation of other players' moves
+- ✅ Added role assignment (80% Echo, 20% Sentinel)
+- ✅ Created mock elimination logic
+- ✅ Added "Exit Simulation" buttons throughout flow
+
+**Key Features:**
+- **No Wallet Required:** Play without connecting any wallet
+- **Instant Gameplay:** No transaction delays, immediate feedback
+- **Auto-Simulation:** After you scan, 2-3 other players automatically make moves
+- **Full Game Flow:** Experience lobby → active game → results
+- **Role Reveal:** See Sentinel/Echo assignment on first scan
+- **Elimination Tracking:** Watch players get eliminated in real-time
+- **Results Page:** See winners/eliminated with prize calculations
+
+**User Flow:**
+1. Click "🎮 Simulate Gameplay (Demo Mode)" button
+2. Game Grid appears with 10 mock players
+3. Click any player (except yours) → Confirmation modal
+4. Confirm → Role reveal modal (Sentinel or Echo)
+5. After your move → 2-3 other players auto-make moves (20% elimination chance)
+6. Continue scanning or click "End Game & View Results"
+7. Results page shows winners and eliminated players
+8. "Exit Simulation" returns to landing page
+
+**Technical Implementation:**
+- Mock state stored in parent component (page.tsx)
+- GameGrid: Disabled contract reads, uses simulation callbacks
+- Results: Calculates winners from non-eliminated players
+- Auto-simulation: Random 2-3 players scan after each user move
+- Staggered timing (1s + 800ms per move) for realistic feel
+
+**Benefits for Demos:**
+- Judges can explore UI without wallet setup
+- No dependency on contract owner to start games
+- Instant understanding of game mechanics
+- Works even as an Echo (other players make moves)
+- Perfect for presentations and hackathon judging
+
+---
+
 ## Known Issues
 
 None.
@@ -787,10 +838,11 @@ None.
 ## Next Steps
 
 1. Begin Step 12: E2E testing and demo prep
-2. Test complete game flow from join → play → results → claim
-3. Prepare demo walkthrough script
-4. Test with multiple wallets
-5. Verify all transactions on Arbitrum Sepolia
+2. Create end-to-end test script for on-chain gameplay
+3. Test complete game flow from join → play → results → claim
+4. Prepare demo walkthrough documentation
+5. Test with multiple wallets
+6. Verify all transactions on Arbitrum Sepolia
 
 ---
 

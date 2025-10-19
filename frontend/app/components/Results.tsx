@@ -9,22 +9,34 @@ interface ResultsProps {
   players: string[];
   currentPlayer: string;
   prizePool: bigint;
+  simulationMode?: boolean;
+  simulationEliminatedPlayers?: string[];
+  onExitSimulation?: () => void;
 }
 
-export default function Results({ players, currentPlayer, prizePool }: ResultsProps) {
+export default function Results({
+  players,
+  currentPlayer,
+  prizePool,
+  simulationMode = false,
+  simulationEliminatedPlayers = [],
+  onExitSimulation
+}: ResultsProps) {
   const [isClaiming, setIsClaiming] = useState(false);
 
-  // Read contract data
+  // Read contract data (skip if simulation mode)
   const { data: winners, refetch: refetchWinners } = useReadContract({
     address: GRIDFALL_CONTRACT_ADDRESS,
     abi: GRIDFALL_ABI,
     functionName: 'getWinners',
+    query: { enabled: !simulationMode }
   });
 
   const { data: eliminatedPlayers } = useReadContract({
     address: GRIDFALL_CONTRACT_ADDRESS,
     abi: GRIDFALL_ABI,
     functionName: 'getEliminatedPlayers',
+    query: { enabled: !simulationMode }
   });
 
   const { data: isCurrentPlayerWinner } = useReadContract({
@@ -32,6 +44,7 @@ export default function Results({ players, currentPlayer, prizePool }: ResultsPr
     abi: GRIDFALL_ABI,
     functionName: 'isWinner',
     args: [currentPlayer as `0x${string}`],
+    query: { enabled: !simulationMode }
   });
 
   const { data: claimableAmount, refetch: refetchClaimable } = useReadContract({
@@ -39,6 +52,7 @@ export default function Results({ players, currentPlayer, prizePool }: ResultsPr
     abi: GRIDFALL_ABI,
     functionName: 'claimableAmount',
     args: [currentPlayer as `0x${string}`],
+    query: { enabled: !simulationMode }
   });
 
   const { data: hasClaimed, refetch: refetchHasClaimed } = useReadContract({
@@ -46,7 +60,17 @@ export default function Results({ players, currentPlayer, prizePool }: ResultsPr
     abi: GRIDFALL_ABI,
     functionName: 'hasClaimed',
     args: [currentPlayer as `0x${string}`],
+    query: { enabled: !simulationMode }
   });
+
+  // Simulation data
+  const simulationWinners = simulationMode
+    ? players.filter(p => !simulationEliminatedPlayers.includes(p))
+    : [];
+  const simulationIsWinner = simulationMode && simulationWinners.includes(currentPlayer);
+  const simulationClaimableAmount = simulationMode && simulationIsWinner
+    ? prizePool / BigInt(simulationWinners.length > 0 ? simulationWinners.length : 1)
+    : BigInt(0);
 
   // Write contract hook
   const { data: claimHash, writeContract: claimWrite, isPending: isClaimPending } = useWriteContract();
@@ -82,20 +106,45 @@ export default function Results({ players, currentPlayer, prizePool }: ResultsPr
   }
 
   const isClaimLoading = isClaimPending || isClaimConfirming;
-  const winnerCount = winners ? (winners as string[]).length : 0;
-  const eliminatedCount = eliminatedPlayers ? (eliminatedPlayers as string[]).length : 0;
+
+  // Use simulation or real data
+  const actualWinners = simulationMode ? simulationWinners : (winners as string[] || []);
+  const actualEliminatedPlayers = simulationMode ? simulationEliminatedPlayers : (eliminatedPlayers as string[] || []);
+  const actualIsWinner = simulationMode ? simulationIsWinner : (isCurrentPlayerWinner === true);
+  const actualClaimableAmount = simulationMode ? simulationClaimableAmount : (claimableAmount as bigint || BigInt(0));
+
+  const winnerCount = actualWinners.length;
+  const eliminatedCount = actualEliminatedPlayers.length;
   const survivorCount = players.length - eliminatedCount;
 
   // Check if current player is a winner
-  const isWinner = isCurrentPlayerWinner === true;
-  const canClaim = isWinner && claimableAmount && (claimableAmount as bigint) > 0n && !hasClaimed;
+  const isWinner = actualIsWinner;
+  const canClaim = simulationMode ? false : (isWinner && actualClaimableAmount > BigInt(0) && !hasClaimed);
 
   return (
     <div className="mt-20">
       {/* Game Over Header */}
       <div className="text-center mb-12">
-        <h1 className="text-6xl font-black text-gradient mb-4">GAME OVER</h1>
-        <p className="text-xl text-gray-400">The grid has fallen. Winners emerge.</p>
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex-1"></div>
+          <h1 className="text-6xl font-black text-gradient">
+            {simulationMode ? '🎮 DEMO RESULTS' : 'GAME OVER'}
+          </h1>
+          {simulationMode && onExitSimulation && (
+            <div className="flex-1 flex justify-end">
+              <button
+                onClick={onExitSimulation}
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg transition-all text-sm"
+              >
+                Exit Simulation
+              </button>
+            </div>
+          )}
+          {!simulationMode && <div className="flex-1"></div>}
+        </div>
+        <p className="text-xl text-gray-400">
+          {simulationMode ? 'Simulation complete. See how you performed!' : 'The grid has fallen. Winners emerge.'}
+        </p>
       </div>
 
       {/* Winner/Loser Banner for Current Player */}
@@ -167,11 +216,15 @@ export default function Results({ players, currentPlayer, prizePool }: ResultsPr
             <div className="text-center mb-4">
               <div className="text-sm text-gray-400 mb-2">Your Prize</div>
               <div className="text-4xl font-bold text-green-400">
-                {claimableAmount ? formatEther(claimableAmount as bigint) : '0'} ETH
+                {formatEther(actualClaimableAmount)} ETH
               </div>
             </div>
 
-            {hasClaimed ? (
+            {simulationMode ? (
+              <div className="text-center text-gray-400">
+                💡 In real game mode, you would claim this prize!
+              </div>
+            ) : hasClaimed ? (
               <div className="text-center">
                 <div className="inline-block px-6 py-3 bg-green-500/10 border border-green-500/50 rounded-lg">
                   <span className="text-green-400 font-bold">✓ Prize Claimed!</span>
@@ -192,7 +245,7 @@ export default function Results({ players, currentPlayer, prizePool }: ResultsPr
                     {isClaimPending ? 'Confirm in Wallet...' : 'Claiming Prize...'}
                   </span>
                 ) : (
-                  `Claim ${claimableAmount ? formatEther(claimableAmount as bigint) : '0'} ETH`
+                  `Claim ${formatEther(actualClaimableAmount)} ETH`
                 )}
               </button>
             ) : (
@@ -210,9 +263,9 @@ export default function Results({ players, currentPlayer, prizePool }: ResultsPr
           🏆 Winners ({winnerCount})
         </h3>
 
-        {winners && (winners as string[]).length > 0 ? (
+        {actualWinners.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {(winners as string[]).map((winner, index) => {
+            {actualWinners.map((winner, index) => {
               const isYou = winner.toLowerCase() === currentPlayer.toLowerCase();
 
               return (
@@ -235,9 +288,7 @@ export default function Results({ players, currentPlayer, prizePool }: ResultsPr
                       </div>
                     </div>
                     <div className="text-green-400 font-bold">
-                      {claimableAmount && isYou
-                        ? formatEther(claimableAmount as bigint)
-                        : '—'} ETH
+                      {isYou ? formatEther(actualClaimableAmount) : '—'} ETH
                     </div>
                   </div>
                 </div>
@@ -255,9 +306,9 @@ export default function Results({ players, currentPlayer, prizePool }: ResultsPr
           💀 Eliminated ({eliminatedCount})
         </h3>
 
-        {eliminatedPlayers && (eliminatedPlayers as string[]).length > 0 ? (
+        {actualEliminatedPlayers.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {(eliminatedPlayers as string[]).map((player, index) => {
+            {actualEliminatedPlayers.map((player, index) => {
               const isYou = player.toLowerCase() === currentPlayer.toLowerCase();
 
               return (

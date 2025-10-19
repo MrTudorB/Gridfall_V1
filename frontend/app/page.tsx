@@ -13,6 +13,49 @@ export default function Home() {
   const [isJoining, setIsJoining] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
 
+  // Simulation mode state
+  const [simulationMode, setSimulationMode] = useState(false);
+  const [simulationGameState, setSimulationGameState] = useState<'lobby' | 'active' | 'finished'>('active');
+  const [simulationEliminatedPlayers, setSimulationEliminatedPlayers] = useState<string[]>([]);
+  const [showHowToPlay, setShowHowToPlay] = useState(false);
+
+  // Mock data for simulation
+  const mockPlayers = [
+    '0x1234567890123456789012345678901234567890',
+    '0x2345678901234567890123456789012345678901',
+    '0x3456789012345678901234567890123456789012',
+    '0x4567890123456789012345678901234567890123',
+    '0x5678901234567890123456789012345678901234',
+    '0x6789012345678901234567890123456789012345',
+    '0x7890123456789012345678901234567890123456',
+    '0x8901234567890123456789012345678901234567',
+    '0x9012345678901234567890123456789012345678',
+    '0x0123456789012345678901234567890123456789',
+  ];
+  const mockCurrentPlayer = mockPlayers[0];
+  const mockPrizePool = BigInt('10000000000000000'); // 0.01 ETH
+
+  // Simulation handlers
+  const startSimulation = () => {
+    setSimulationMode(true);
+    setSimulationGameState('active');
+    setSimulationEliminatedPlayers([]);
+  };
+
+  const exitSimulation = () => {
+    setSimulationMode(false);
+    setSimulationGameState('active');
+    setSimulationEliminatedPlayers([]);
+  };
+
+  const handleSimulationElimination = (playerAddress: string) => {
+    setSimulationEliminatedPlayers((prev) => [...prev, playerAddress]);
+  };
+
+  const endSimulationGame = () => {
+    setSimulationGameState('finished');
+  };
+
   // Write contract hooks
   const { data: joinHash, writeContract: joinGameWrite, isPending: isJoinPending } = useWriteContract();
   const { data: startHash, writeContract: startGameWrite, isPending: isStartPending } = useWriteContract();
@@ -147,7 +190,12 @@ export default function Home() {
       <div className="relative z-10">
         {/* Header */}
         <header className="flex justify-between items-center p-6 max-w-7xl mx-auto">
-          <div className="text-2xl font-bold text-gradient">GRIDFALL</div>
+          <button
+            onClick={() => setShowHowToPlay(true)}
+            className="px-6 py-2 border-2 border-cyan-500 text-cyan-400 font-bold text-lg rounded-lg hover:bg-cyan-500 hover:text-black transition-all"
+          >
+            How to Play
+          </button>
           <ConnectButton />
         </header>
 
@@ -228,49 +276,63 @@ export default function Home() {
 
           {/* Enter the Grid Button */}
           <div className="text-center">
-            {!isConnected ? (
-              <ConnectButton.Custom>
-                {({ openConnectModal }) => (
-                  <button
-                    onClick={openConnectModal}
-                    className="px-16 py-5 border-2 border-cyan-500 text-cyan-400 font-bold text-lg rounded-lg hover:bg-cyan-500 hover:text-black transition-all transform hover:scale-105 uppercase tracking-wider"
-                  >
-                    Connect Wallet to Enter
-                  </button>
-                )}
-              </ConnectButton.Custom>
-            ) : hasJoined ? (
-              <button
-                disabled
-                className="px-16 py-5 border-2 border-green-500 text-green-400 font-bold text-lg rounded-lg uppercase tracking-wider opacity-75 cursor-not-allowed"
-              >
-                ✓ Already Joined
-              </button>
-            ) : gameStatus !== 0 ? (
-              <button
-                disabled
-                className="px-16 py-5 border-2 border-gray-500 text-gray-400 font-bold text-lg rounded-lg uppercase tracking-wider opacity-75 cursor-not-allowed"
-              >
-                Game {gameStatus === 1 ? 'In Progress' : 'Ended'}
-              </button>
-            ) : (
-              <button
-                onClick={handleJoinGame}
-                disabled={!canJoinGame || isJoinLoading}
-                className="px-16 py-5 border-2 border-cyan-500 text-cyan-400 font-bold text-lg rounded-lg hover:bg-cyan-500 hover:text-black transition-all transform hover:scale-105 uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-transparent disabled:hover:text-cyan-400"
-              >
-                {isJoinLoading ? (
-                  <span className="flex items-center gap-3">
-                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    {isJoinPending ? 'Confirm in Wallet...' : 'Joining Game...'}
-                  </span>
-                ) : (
-                  `Enter the Grid (${depositAmount ? formatEther(depositAmount as bigint) : '0.001'} ETH)`
-                )}
-              </button>
+            <div className="mb-4">
+              {!isConnected ? (
+                <ConnectButton.Custom>
+                  {({ openConnectModal }) => (
+                    <button
+                      onClick={openConnectModal}
+                      className="px-16 py-5 border-2 border-cyan-500 text-cyan-400 font-bold text-lg rounded-lg hover:bg-cyan-500 hover:text-black transition-all transform hover:scale-105 uppercase tracking-wider"
+                    >
+                      Connect Wallet to Enter
+                    </button>
+                  )}
+                </ConnectButton.Custom>
+              ) : hasJoined ? (
+                <button
+                  disabled
+                  className="px-16 py-5 border-2 border-green-500 text-green-400 font-bold text-lg rounded-lg uppercase tracking-wider opacity-75 cursor-not-allowed"
+                >
+                  ✓ Already Joined
+                </button>
+              ) : gameStatus !== 0 ? (
+                <button
+                  disabled
+                  className="px-16 py-5 border-2 border-gray-500 text-gray-400 font-bold text-lg rounded-lg uppercase tracking-wider opacity-75 cursor-not-allowed"
+                >
+                  Game {gameStatus === 1 ? 'In Progress' : 'Ended'}
+                </button>
+              ) : (
+                <button
+                  onClick={handleJoinGame}
+                  disabled={!canJoinGame || isJoinLoading}
+                  className="px-16 py-5 border-2 border-cyan-500 text-cyan-400 font-bold text-lg rounded-lg hover:bg-cyan-500 hover:text-black transition-all transform hover:scale-105 uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-transparent disabled:hover:text-cyan-400"
+                >
+                  {isJoinLoading ? (
+                    <span className="flex items-center gap-3">
+                      <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      {isJoinPending ? 'Confirm in Wallet...' : 'Joining Game...'}
+                    </span>
+                  ) : (
+                    `Enter the Grid (${depositAmount ? formatEther(depositAmount as bigint) : '0.001'} ETH)`
+                  )}
+                </button>
+              )}
+            </div>
+
+            {/* Simulate Gameplay Button (for demo/judges) - Always show when not in simulation */}
+            {!simulationMode && (
+              <div>
+                <button
+                  onClick={startSimulation}
+                  className="px-12 py-3 border-2 border-purple-500 text-purple-400 font-bold text-base rounded-lg hover:bg-purple-500 hover:text-black transition-all transform hover:scale-105 uppercase tracking-wider"
+                >
+                  🎮 Simulate Gameplay (Demo Mode)
+                </button>
+              </div>
             )}
           </div>
 
@@ -394,8 +456,34 @@ export default function Home() {
             </div>
           )}
 
+          {/* Simulation Mode - Active Game Grid */}
+          {simulationMode && simulationGameState === 'active' && (
+            <GameGrid
+              players={mockPlayers}
+              currentPlayer={mockCurrentPlayer}
+              prizePool={mockPrizePool}
+              simulationMode={true}
+              simulationEliminatedPlayers={simulationEliminatedPlayers}
+              onSimulationElimination={handleSimulationElimination}
+              onEndSimulation={endSimulationGame}
+              onExitSimulation={exitSimulation}
+            />
+          )}
+
+          {/* Simulation Mode - Results Page */}
+          {simulationMode && simulationGameState === 'finished' && (
+            <Results
+              players={mockPlayers}
+              currentPlayer={mockCurrentPlayer}
+              prizePool={mockPrizePool}
+              simulationMode={true}
+              simulationEliminatedPlayers={simulationEliminatedPlayers}
+              onExitSimulation={exitSimulation}
+            />
+          )}
+
           {/* Active Game Grid (when game is ACTIVE and player has joined) */}
-          {isConnected && gameStatus === 1 && hasJoined && players && (
+          {!simulationMode && isConnected && gameStatus === 1 && hasJoined && players && (
             <GameGrid
               players={players as string[]}
               currentPlayer={address!}
@@ -404,7 +492,7 @@ export default function Home() {
           )}
 
           {/* Results Page (when game is FINISHED and player has joined) */}
-          {isConnected && gameStatus === 2 && hasJoined && players && (
+          {!simulationMode && isConnected && gameStatus === 2 && hasJoined && players && (
             <Results
               players={players as string[]}
               currentPlayer={address!}
@@ -468,6 +556,106 @@ export default function Home() {
           </p>
         </footer>
       </div>
+
+      {/* How to Play Modal */}
+      {showHowToPlay && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 border-2 border-cyan-500 rounded-lg p-8 max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-3xl font-bold text-cyan-400">How to Play Gridfall</h2>
+              <button
+                onClick={() => setShowHowToPlay(false)}
+                className="text-gray-400 hover:text-cyan-400 text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-6 text-gray-300">
+              {/* Game Overview */}
+              <div>
+                <h3 className="text-xl font-bold text-cyan-400 mb-2">Game Overview</h3>
+                <p>Gridfall is a decentralized battle royale game where players must scan each other to survive. Only the smartest and most strategic players will claim their share of the prize pool.</p>
+              </div>
+
+              {/* How to Join */}
+              <div>
+                <h3 className="text-xl font-bold text-cyan-400 mb-2">How to Join</h3>
+                <ol className="list-decimal list-inside space-y-2 ml-2">
+                  <li>Connect your wallet to the game</li>
+                  <li>Deposit 0.001 ETH to join the lobby</li>
+                  <li>Wait for 10 players to join</li>
+                  <li>The game owner will start the game</li>
+                </ol>
+              </div>
+
+              {/* Roles */}
+              <div>
+                <h3 className="text-xl font-bold text-cyan-400 mb-2">Roles (Secret Assignment)</h3>
+                <p className="mb-2">Roles are secretly assigned via iExec Trusted Execution Environment (TEE):</p>
+                <ul className="space-y-2 ml-2">
+                  <li><span className="text-red-400 font-bold">2 Sentinels</span> - Can eliminate Echoes by scanning them</li>
+                  <li><span className="text-green-400 font-bold">8 Echoes</span> - Must avoid being scanned by Sentinels</li>
+                </ul>
+                <p className="mt-2 text-yellow-400 text-sm">⚠️ You won't know your role until you make your first scan!</p>
+              </div>
+
+              {/* Gameplay */}
+              <div>
+                <h3 className="text-xl font-bold text-cyan-400 mb-2">Gameplay</h3>
+                <ol className="list-decimal list-inside space-y-2 ml-2">
+                  <li>Once the game starts, you'll see a 2x5 grid of all 10 players</li>
+                  <li>Click on any player's card (except your own) to scan them</li>
+                  <li>Confirm your scan in the modal that appears</li>
+                  <li>Your role will be revealed after your first scan</li>
+                  <li>If you're a Sentinel and scan an Echo, they are eliminated</li>
+                  <li>If you're an Echo or a Sentinel scanning another Sentinel, nothing happens</li>
+                  <li>Continue scanning until the game ends</li>
+                </ol>
+                <p className="mt-2 text-yellow-400 text-sm">⚠️ You must make at least one move to be eligible for winning!</p>
+              </div>
+
+              {/* Winning */}
+              <div>
+                <h3 className="text-xl font-bold text-cyan-400 mb-2">How to Win</h3>
+                <ul className="space-y-2 ml-2">
+                  <li>Survive until the game ends</li>
+                  <li>Make at least one scan (required by smart contract)</li>
+                  <li>Winners split 95% of the prize pool equally</li>
+                  <li>5% goes to the contract owner as a fee</li>
+                </ul>
+              </div>
+
+              {/* Strategy Tips */}
+              <div>
+                <h3 className="text-xl font-bold text-cyan-400 mb-2">Strategy Tips</h3>
+                <ul className="space-y-2 ml-2">
+                  <li>Don't reveal your role too early</li>
+                  <li>Watch the elimination patterns to identify Sentinels</li>
+                  <li>If you're a Sentinel, consider your timing carefully</li>
+                  <li>If you're an Echo, try to blend in and avoid suspicious behavior</li>
+                  <li>Remember: everyone must make at least one move!</li>
+                </ul>
+              </div>
+
+              {/* Safe Exit */}
+              <div>
+                <h3 className="text-xl font-bold text-cyan-400 mb-2">Safe Exit</h3>
+                <p>If you want to leave the game early, you can use the "Safe Exit" button. This will remove you from the game but you won't be eligible for prizes.</p>
+              </div>
+            </div>
+
+            <div className="mt-8 text-center">
+              <button
+                onClick={() => setShowHowToPlay(false)}
+                className="px-8 py-3 bg-cyan-500 hover:bg-cyan-400 text-black font-bold rounded-lg transition-all"
+              >
+                Got it! Let's Play
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
